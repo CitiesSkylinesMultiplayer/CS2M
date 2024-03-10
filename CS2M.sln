@@ -1,0 +1,28 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CS2M", "CS2M\CS2M.csproj", "{EDB4C83E-C951-40B3-A0F9-555821957AA4}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CS2M.API", "CS2M.API\CS2M.API.csproj", "{F335F74A-E2A1-4B9A-90E7-68E1ECA6B396}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CS2M.Test", "CS2M.Test\CS2M.Test.csproj", "{B8CF0DB3-7863-4BED-9863-FCF274433A97}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{EDB4C83E-C951-40B3-A0F9-555821957AA4}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{EDB4C83E-C951-40B3-A0F9-555821957AA4}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{EDB4C83E-C951-40B3-A0F9-555821957AA4}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{EDB4C83E-C951-40B3-A0F9-555821957AA4}.Release|Any CPU.Build.0 = Release|Any CPU
+		{F335F74A-E2A1-4B9A-90E7-68E1ECA6B396}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{F335F74A-E2A1-4B9A-90E7-68E1ECA6B396}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{F335F74A-E2A1-4B9A-90E7-68E1ECA6B396}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{F335F74A-E2A1-4B9A-90E7-68E1ECA6B396}.Release|Any CPU.Build.0 = Release|Any CPU
+		{B8CF0DB3-7863-4BED-9863-FCF274433A97}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{B8CF0DB3-7863-4BED-9863-FCF274433A97}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{B8CF0DB3-7863-4BED-9863-FCF274433A97}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{B8CF0DB3-7863-4BED-9863-FCF274433A97}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+EndGlobal
