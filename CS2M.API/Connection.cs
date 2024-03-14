@@ -1,11 +1,10 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Reflection;
-using Unity.Entities;
 
 namespace CS2M.API
 {
-    public struct ModConnection : IComponentData
+    public abstract class ModConnection
     {
         /// <summary>
         ///     The name of this mod support instance.
@@ -33,5 +32,19 @@ namespace CS2M.API
         ///     are added to the protocol.
         /// </summary>
         public List<Assembly> CommandAssemblies;
+        
+        /// <summary>
+        ///     Register all handlers for changes to send to other players.
+        ///     This method can for example be used to setup Harmony patches.
+        ///     If will be called in the LevelLoaded handler of the LoadingExtension.
+        /// </summary>
+        public abstract void RegisterHandlers();
+
+        /// <summary>
+        ///     Unregister all previously registered handlers.
+        ///     This method can for example be used to remove Harmony patches.
+        ///     If will be called in the LevelUnloading handler of the LoadingExtension.
+        /// </summary>
+        public abstract void UnregisterHandlers();
     }
 }

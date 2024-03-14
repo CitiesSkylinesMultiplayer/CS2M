@@ -74,4 +74,10 @@
       <ProjectReference Include="..\CS2M.API\CS2M.API.csproj" />
     </ItemGroup>
 
+    <ItemGroup>
+      <PackageReference Include="MessagePack" Version="2.5.140" />
+      <PackageReference Include="MessagePack.Attributeless" Version="1.0.1" />
+      <PackageReference Include="MessagePack.UnityShims" Version="2.5.140" />
+    </ItemGroup>
+
 </Project>

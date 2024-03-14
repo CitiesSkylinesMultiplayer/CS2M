@@ -6,17 +6,8 @@
 
     <ItemGroup>
       <Reference Include="Unity.Entities">
-        <HintPath>..\..\..\..\ssdgames\SteamLibrary\steamapps\common\Cities Skylines II\Cities2_Data\Managed\Unity.Entities.dll</HintPath>
+        <HintPath>..\..\..\..\games\steam\steamapps\common\Cities Skylines II\Cities2_Data\Managed\Unity.Entities.dll</HintPath>
       </Reference>
-    </ItemGroup>
-
-    <ItemGroup>
-      <PackageReference Include="MessagePack" Version="2.5.140" />
-      <PackageReference Include="MessagePack.UnityShims" Version="2.5.140" />
-      <PackageReference Include="MessagePackAnalyzer" Version="2.5.140">
-        <PrivateAssets>all</PrivateAssets>
-        <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
-      </PackageReference>
     </ItemGroup>
 
 </Project>
