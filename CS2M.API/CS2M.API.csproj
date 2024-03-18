@@ -6,7 +6,6 @@
 
     <ItemGroup>
       <Reference Include="Unity.Entities">
-        <HintPath>..\..\..\..\games\steam\steamapps\common\Cities Skylines II\Cities2_Data\Managed\Unity.Entities.dll</HintPath>
       </Reference>
     </ItemGroup>
 

@@ -19,7 +19,7 @@ namespace CS2M.Commands
         private readonly Dictionary<Type, CommandHandler> _cmdMapping = new Dictionary<Type, CommandHandler>();
 
         public MessagePackSerializerOptions Model;
-        
+
         // /// <summary>
         // ///     This method is used to send a command to a connected client.
         // ///     Does only work if the current game acts as a server.
@@ -180,7 +180,7 @@ namespace CS2M.Commands
 
                 Type[] handlers = packets.ToArray();
                 Log.Info($"Initializing data model with {handlers.Length} commands...");
-                
+
                 // Configure MessagePack resolver
                 IFormatterResolver resolver = CompositeResolver.Create(
                     // enable extension packages first
