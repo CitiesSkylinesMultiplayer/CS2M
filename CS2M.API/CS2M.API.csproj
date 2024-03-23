@@ -4,9 +4,4 @@
         <TargetFramework>net472</TargetFramework>
     </PropertyGroup>
 
-    <ItemGroup>
-      <Reference Include="Unity.Entities">
-      </Reference>
-    </ItemGroup>
-
 </Project>

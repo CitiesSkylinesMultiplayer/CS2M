@@ -11,14 +11,11 @@ namespace CS2M
     {
         public static Settings Settings;
 
-        public CS2M()
+        public void OnLoad(UpdateSystem updateSystem)
         {
             Log.SetLoggingLevel(Level.Debug);
             CommandInternal.Instance = new CommandInternal();
-        }
-
-        public void OnLoad(UpdateSystem updateSystem)
-        {
+            
             Settings = new Settings();
             AssetDatabase.global.LoadSettings(nameof(CS2M), Settings, new Settings());
             ModSupport.Instance.Init();
