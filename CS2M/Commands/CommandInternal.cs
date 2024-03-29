@@ -6,9 +6,9 @@ using CS2M.API;
 using CS2M.API.Commands;
 using CS2M.Helpers;
 using CS2M.Mods;
-using MessagePack;
-using MessagePack.Attributeless;
-using MessagePack.Resolvers;
+//using MessagePack;
+//using MessagePack.Attributeless;
+//using MessagePack.Resolvers;
 
 namespace CS2M.Commands
 {
@@ -18,7 +18,7 @@ namespace CS2M.Commands
 
         private readonly Dictionary<Type, CommandHandler> _cmdMapping = new Dictionary<Type, CommandHandler>();
 
-        public MessagePackSerializerOptions Model;
+        //public MessagePackSerializerOptions Model;
 
         // /// <summary>
         // ///     This method is used to send a command to a connected client.
@@ -182,28 +182,28 @@ namespace CS2M.Commands
                 Log.Info($"Initializing data model with {handlers.Length} commands...");
 
                 // Configure MessagePack resolver
-                IFormatterResolver resolver = CompositeResolver.Create(
-                    // enable extension packages first
-                    MessagePack.Unity.Extension.UnityBlitResolver.Instance,
-                    MessagePack.Unity.UnityResolver.Instance,
-
-                    // finally use standard resolver
-                    StandardResolver.Instance
-                );
-                var options = new MessagePackSerializerOptions(resolver).Configure();
-
-
-                // Create instances of the handlers, initialize mappings and register command subclasses in the protobuf model
-                foreach (Type type in handlers)
-                {
-                    CommandHandler handler = (CommandHandler)Activator.CreateInstance(type);
-                    _cmdMapping.Add(handler.GetDataType(), handler);
-
-                    // Add subtype to the MsgPack model with all attributes
-                    options.SubType(typeof(CommandBase), handler.GetDataType());
-                }
-
-                Model = options.Build();
+                // IFormatterResolver resolver = CompositeResolver.Create(
+                //     // enable extension packages first
+                //     MessagePack.Unity.Extension.UnityBlitResolver.Instance,
+                //     MessagePack.Unity.UnityResolver.Instance,
+                //
+                //     // finally use standard resolver
+                //     StandardResolver.Instance
+                // );
+                // var options = new MessagePackSerializerOptions(resolver).Configure();
+                //
+                //
+                // // Create instances of the handlers, initialize mappings and register command subclasses in the protobuf model
+                // foreach (Type type in handlers)
+                // {
+                //     CommandHandler handler = (CommandHandler)Activator.CreateInstance(type);
+                //     _cmdMapping.Add(handler.GetDataType(), handler);
+                //
+                //     // Add subtype to the MsgPack model with all attributes
+                //     options.SubType(typeof(CommandBase), handler.GetDataType());
+                // }
+                //
+                // Model = options.Build();
             }
             catch (Exception ex)
             {

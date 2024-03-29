@@ -33,6 +33,9 @@
         <Reference Include="Colossal.Logging">
             <Private>false</Private>
         </Reference>
+        <Reference Include="Colossal.Localization">
+            <Private>false</Private>
+        </Reference>
         <Reference Include="Colossal.IO.AssetDatabase">
             <Private>false</Private>
         </Reference>
@@ -72,12 +75,6 @@
 
     <ItemGroup>
       <ProjectReference Include="..\CS2M.API\CS2M.API.csproj" />
-    </ItemGroup>
-
-    <ItemGroup>
-      <PackageReference Include="MessagePack" Version="2.5.140" />
-      <PackageReference Include="MessagePack.Attributeless" Version="1.0.1" />
-      <PackageReference Include="MessagePack.UnityShims" Version="2.5.140" />
     </ItemGroup>
 
 </Project>
