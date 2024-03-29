@@ -77,4 +77,8 @@
       <ProjectReference Include="..\CS2M.API\CS2M.API.csproj" />
     </ItemGroup>
 
+    <Target Name="BuildUI" AfterTargets="AfterBuild">
+        <Exec Command="npm run build" WorkingDirectory="$(ProjectDir)/../CS2M.UI" />
+    </Target>
+
 </Project>
