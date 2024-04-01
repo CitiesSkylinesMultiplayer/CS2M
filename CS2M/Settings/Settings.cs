@@ -48,7 +48,6 @@ namespace CS2M.Settings
         public void OnSetLoggingLevel(int level)
         {
             Log.SetLoggingLevel(Level.GetLevel(level));
-            Log.Info("hi");
         }
     }
 }
