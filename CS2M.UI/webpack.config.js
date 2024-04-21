@@ -34,6 +34,7 @@ module.exports = {
     "react-dom": "ReactDOM",
     "cs2/modding": "cs2/modding",
     "cs2/api": "cs2/api",
+    "cs2/input": "cs2/input",
     "cs2/bindings": "cs2/bindings",
     "cs2/l10n": "cs2/l10n",
     "cs2/ui": "cs2/ui",

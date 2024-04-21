@@ -24,6 +24,9 @@
     <Import Project="$([System.Environment]::GetEnvironmentVariable('CSII_TOOLPATH', 'EnvironmentVariableTarget.Process'))\Mod.targets"/>
 
     <ItemGroup>
+        <Reference Include="Colossal.UI.Binding">
+            <Private>false</Private>
+        </Reference>
         <Reference Include="Game">
             <Private>false</Private>
         </Reference>

@@ -1,5 +1,6 @@
 using System.Collections.Generic;
 using System.Linq;
+using Colossal.UI.Binding;
 using Game.Modding;
 using Game.SceneFlow;
 
@@ -13,7 +14,7 @@ namespace CS2M.Mods
         KnownWorking,
     }
 
-    public struct ModSupportStatus
+    public readonly struct ModSupportStatus : IJsonWritable
     {
         public ModSupportStatus(string name, string typeName, ModSupportType type, bool clientSide)
         {
@@ -27,6 +28,20 @@ namespace CS2M.Mods
         public string TypeName { get; }
         public ModSupportType Type { get; }
         public bool ClientSide { get; }
+
+        public void Write(IJsonWriter writer)
+        {
+            writer.TypeBegin(this.GetType().FullName);
+            writer.PropertyName("name");
+            writer.Write(this.Name);
+            writer.PropertyName("type_name");
+            writer.Write(this.TypeName);
+            writer.PropertyName("support");
+            writer.Write(this.Type.ToString());
+            writer.PropertyName("client_side");
+            writer.Write(this.ClientSide);
+            writer.TypeEnd();
+        }
     }
 
     public static class ModCompat
@@ -37,7 +52,7 @@ namespace CS2M.Mods
         private static readonly string[] KnownToWork = {  };
         private static readonly string[] UnsupportedMods = {  };
 
-        private static IEnumerable<ModSupportStatus> GetModSupport()
+        public static IEnumerable<ModSupportStatus> GetModSupport()
         {
             /*foreach (SteamHelper.DLC dlc in DLCHelper.GetOwnedExpansions().DLCs())
             {
@@ -55,8 +70,8 @@ namespace CS2M.Mods
                 // Skip disabled mods
                 if (!info.isLoaded)
                     continue;
-                
-                Log.Debug(info.name);
+
+                Log.Debug(info.asset.name);
                 Log.Debug(info.assemblyFullName);
 
                 foreach (IMod modInstance in info.instances)
@@ -76,7 +91,7 @@ namespace CS2M.Mods
                     // Mods known to work
                     if (KnownToWork.Contains(modInstanceName))
                     {
-                        yield return new ModSupportStatus(info.name, modInstanceName, ModSupportType.KnownWorking, isClientSide);
+                        yield return new ModSupportStatus(info.asset.name, modInstanceName, ModSupportType.KnownWorking, isClientSide);
                         continue;
                     }
 
@@ -84,20 +99,25 @@ namespace CS2M.Mods
                     if (ModSupport.Instance.ConnectedMods.Select(mod => mod.ModClass)
                         .Contains(modInstance?.GetType()))
                     {
-                        yield return new ModSupportStatus(info.name, modInstanceName, ModSupportType.Supported, isClientSide);
+                        yield return new ModSupportStatus(info.asset.name, modInstanceName, ModSupportType.Supported, isClientSide);
                         continue;
                     }
 
                     // Decide between unsupported and unknown
                     if (UnsupportedMods.Contains(modInstanceName))
                     {
-                        yield return new ModSupportStatus(info.name, modInstanceName, ModSupportType.Unsupported, isClientSide);
+                        yield return new ModSupportStatus(info.asset.name, modInstanceName, ModSupportType.Unsupported, isClientSide);
                         continue;
                     }
 
-                    yield return new ModSupportStatus(info.name, modInstanceName, ModSupportType.Unknown, isClientSide);
+                    yield return new ModSupportStatus(info.asset.name, modInstanceName, ModSupportType.Unknown, isClientSide);
                 }
             }
+        }
+
+        public static List<ModSupportStatus> GetModSupportList()
+        {
+            return GetModSupport().ToList();
         }
 
         /*public static void BuildModInfo(UIPanel panel)

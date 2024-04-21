@@ -1,10 +1,17 @@
-﻿using Colossal.IO.AssetDatabase;
+﻿using System.Collections;
+using System.Collections.Generic;
+using Colossal.IO.AssetDatabase;
+using Colossal.UI.Binding;
 using CS2M.Commands;
+using CS2M.Helpers;
 using CS2M.Mods;
 using CS2M.Settings;
+using CS2M.UI;
 using Game;
 using Game.Modding;
 using Game.SceneFlow;
+using Game.UI.Menu;
+using Unity.Entities;
 
 namespace CS2M
 {
@@ -25,6 +32,9 @@ namespace CS2M
             Settings.OnSetLoggingLevel(Settings.LoggingLevel);
 
             ModSupport.Instance.Init();
+
+            // Set up systems
+            updateSystem.UpdateAt<UISystem>(SystemUpdatePhase.UIUpdate);
         }
 
         public void OnDispose()
