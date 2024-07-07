@@ -67,11 +67,14 @@
     </ItemGroup>
 
     <ItemGroup>
-      <ProjectReference Include="..\CS2M.API\CS2M.API.csproj" />
+        <ProjectReference Include="..\CS2M.API\CS2M.API.csproj" />
     </ItemGroup>
 
     <ItemGroup>
-      <PackageReference Include="LiteNetLib" Version="1.2.0" />
+        <PackageReference Include="LiteNetLib" Version="1.2.0" />
+        <PackageReference Include="MessagePack" Version="2.6.100-alpha" />
+        <PackageReference Include="MessagePack.Attributeless" Version="1.0.1" />
+        <PackageReference Include="MessagePack.UnityShims" Version="2.6.100-alpha" /> 
     </ItemGroup>
 
     <ItemGroup>

@@ -1,6 +1,7 @@
 ﻿using Colossal.IO.AssetDatabase;
 using CS2M.Commands;
 using CS2M.Mods;
+using CS2M.Networking;
 using CS2M.UI;
 using Game;
 using Game.Modding;
@@ -9,17 +10,19 @@ namespace CS2M
 {
     public class Mod : IMod
     {
-        public static Settings.Settings Settings;
+        public static Settings.Settings ModSettings;
 
         public void OnLoad(UpdateSystem updateSystem)
         {
             CommandInternal.Instance = new CommandInternal();
 
-            Settings = new Settings.Settings(this);
-            Settings.RegisterInOptionsUI();
-            AssetDatabase.global.LoadSettings(nameof(CS2M), Settings, new Settings.Settings(this));
+            ModSettings = new Settings.Settings(this);
+            ModSettings.RegisterInOptionsUI();
+            AssetDatabase.global.LoadSettings(nameof(CS2M), ModSettings, new Settings.Settings(this));
+            
+            updateSystem.UpdateBefore<NetworkingSystem>(SystemUpdatePhase.PreSimulation);
 
-            Settings.OnSetLoggingLevel(Settings.LoggingLevel);
+            ModSettings.OnSetLoggingLevel(ModSettings.LoggingLevel);
 
             ModSupport.Instance.Init();
 
@@ -31,10 +34,10 @@ namespace CS2M
         {
             ModSupport.Instance.DestroyConnections();
 
-            if (Settings != null)
+            if (ModSettings != null)
             {
-                Settings.UnregisterInOptionsUI();
-                Settings = null;
+                ModSettings.UnregisterInOptionsUI();
+                ModSettings = null;
             }
         }
     }

@@ -4,11 +4,13 @@ using System.Linq;
 using System.Reflection;
 using CS2M.API;
 using CS2M.API.Commands;
+using CS2M.API.Networking;
 using CS2M.Helpers;
 using CS2M.Mods;
-//using MessagePack;
-//using MessagePack.Attributeless;
-//using MessagePack.Resolvers;
+using CS2M.Networking;
+using MessagePack;
+using MessagePack.Attributeless;
+using MessagePack.Resolvers;
 
 namespace CS2M.Commands
 {
@@ -18,42 +20,18 @@ namespace CS2M.Commands
 
         private readonly Dictionary<Type, CommandHandler> _cmdMapping = new Dictionary<Type, CommandHandler>();
 
-        //public MessagePackSerializerOptions Model;
+        private MessagePackSerializerOptions _model;
 
-        // /// <summary>
-        // ///     This method is used to send a command to a connected client.
-        // ///     Does only work if the current game acts as a server.
-        // /// </summary>
-        // /// <param name="peer">The NetPeer to send the command to.</param>
-        // /// <param name="command">The command to send.</param>
-        // public void SendToClient(NetPeer peer, CommandBase command)
-        // {
-        //     if (MultiplayerManager.Instance.CurrentRole != MultiplayerRole.Server)
-        //         return;
-        //
-        //     TransactionHandler.StartTransaction(command);
-        //     SetSenderId(command);
-        //
-        //     MultiplayerManager.Instance.CurrentServer.SendToClient(peer, command);
-        // }
-        //
-        // /// <summary>
-        // ///     This method is used to send a command to a connected client.
-        // ///     Does only work if the current game acts as a server.
-        // /// </summary>
-        // /// <param name="player">The Player to send the command to.</param>
-        // /// <param name="command">The command to send.</param>
-        // public void SendToClient(Player player, CommandBase command)
-        // {
-        //     if (player is CSMPlayer csmPlayer)
-        //     {
-        //         SendToClient(csmPlayer.NetPeer, command);
-        //     }
-        //     else
-        //     {
-        //         Log.Warn("Trying to send packet to non-csm player, ignoring.");
-        //     }
-        // }
+        /// <summary>
+        ///     This method is used to send a command to a connected client.
+        ///     Does only work if the current game acts as a server.
+        /// </summary>
+        /// <param name="player">The Player to send the command to.</param>
+        /// <param name="command">The command to send.</param>
+        public void SendToClient(Player player, CommandBase command)
+        {
+            NetworkInterface.Instance.SendToClient(player, command);
+        }
 
         /// <summary>
         ///     This method is used to send a command to all connected clients.
@@ -62,13 +40,9 @@ namespace CS2M.Commands
         /// <param name="command">The command to send.</param>
         public void SendToClients(CommandBase command)
         {
-            // if (MultiplayerManager.Instance.CurrentRole != MultiplayerRole.Server)
-            //     return;
-            //
             // TransactionHandler.StartTransaction(command);
-            // SetSenderId(command);
             //
-            // MultiplayerManager.Instance.CurrentServer.SendToClients(command);
+            NetworkInterface.Instance.SendToClients(command);
         }
 
         // /// <summary>
@@ -100,9 +74,8 @@ namespace CS2M.Commands
             //     return;
             //
             // TransactionHandler.StartTransaction(command);
-            // SetSenderId(command);
             //
-            // MultiplayerManager.Instance.CurrentClient.SendToServer(command);
+            NetworkInterface.Instance.SendToServer(command);
         }
 
         /// <summary>
@@ -113,30 +86,7 @@ namespace CS2M.Commands
         /// <param name="command">The command to send.</param>
         public void SendToAll(CommandBase command)
         {
-            // if (MultiplayerManager.Instance.CurrentRole == MultiplayerRole.Client)
-            // {
-            //     SendToServer(command);
-            // }
-            // else if (MultiplayerManager.Instance.CurrentRole == MultiplayerRole.Server)
-            // {
-            //     SendToClients(command);
-            // }
-        }
-
-        /// <summary>
-        ///     Sets the client/server id of the command.
-        /// </summary>
-        /// <param name="command">The command to modify.</param>
-        private void SetSenderId(CommandBase command)
-        {
-            // if (MultiplayerManager.Instance.CurrentRole == MultiplayerRole.Server)
-            // {
-            //     command.SenderId = -1;
-            // }
-            // else
-            // {
-            //     command.SenderId = MultiplayerManager.Instance.CurrentClient.ClientId;
-            // }
+            NetworkInterface.Instance.SendToAll(command);
         }
 
         /// <summary>
@@ -158,6 +108,11 @@ namespace CS2M.Commands
         {
             _cmdMapping.TryGetValue(typeof(T), out CommandHandler handler);
             return (TH)handler;
+        }
+
+        public byte[] Serialize(CommandBase command)
+        {
+            return MessagePackSerializer.Serialize(command, _model);
         }
 
         public void RefreshModel()
@@ -182,28 +137,27 @@ namespace CS2M.Commands
                 Log.Info($"Initializing data model with {handlers.Length} commands...");
 
                 // Configure MessagePack resolver
-                // IFormatterResolver resolver = CompositeResolver.Create(
-                //     // enable extension packages first
-                //     MessagePack.Unity.Extension.UnityBlitResolver.Instance,
-                //     MessagePack.Unity.UnityResolver.Instance,
-                //
-                //     // finally use standard resolver
-                //     StandardResolver.Instance
-                // );
-                // var options = new MessagePackSerializerOptions(resolver).Configure();
-                //
-                //
-                // // Create instances of the handlers, initialize mappings and register command subclasses in the protobuf model
-                // foreach (Type type in handlers)
-                // {
-                //     CommandHandler handler = (CommandHandler)Activator.CreateInstance(type);
-                //     _cmdMapping.Add(handler.GetDataType(), handler);
-                //
-                //     // Add subtype to the MsgPack model with all attributes
-                //     options.SubType(typeof(CommandBase), handler.GetDataType());
-                // }
-                //
-                // Model = options.Build();
+                IFormatterResolver resolver = CompositeResolver.Create(
+                    // enable extension packages first
+                    MessagePack.Unity.Extension.UnityBlitResolver.Instance,
+                    MessagePack.Unity.UnityResolver.Instance,
+                
+                    // finally use standard resolver
+                    StandardResolver.Instance
+                );
+                var options = new MessagePackSerializerOptions(resolver).Configure();
+                
+                // Create instances of the handlers, initialize mappings and register command subclasses in the protobuf model
+                foreach (Type type in handlers)
+                {
+                    CommandHandler handler = (CommandHandler)Activator.CreateInstance(type);
+                    _cmdMapping.Add(handler.GetDataType(), handler);
+                
+                    // Add subtype to the MsgPack model with all attributes
+                    options.SubType(typeof(CommandBase), handler.GetDataType());
+                }
+                
+                _model = options.Build();
             }
             catch (Exception ex)
             {
