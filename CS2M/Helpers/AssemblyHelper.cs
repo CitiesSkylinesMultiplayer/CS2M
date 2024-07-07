@@ -29,7 +29,7 @@ namespace CS2M.Helpers
         public static IEnumerable<Type> FindClassesInCSM(Type typeToSearchFor)
         {
             // Only use own assembly, others have to be registered as mods
-            Assembly assembly = typeof(CS2M).Assembly;
+            Assembly assembly = typeof(Mod).Assembly;
 
             IEnumerable<Type> handlers = FindImplementationsInAssembly(assembly, typeToSearchFor);
             foreach (Type handler in handlers)

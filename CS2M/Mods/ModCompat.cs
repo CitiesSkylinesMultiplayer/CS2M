@@ -46,8 +46,8 @@ namespace CS2M.Mods
 
     public static class ModCompat
     {
-        private static readonly string[] ClientSideMods = {  };
-        private static readonly string[] IgnoredMods = { "CitiesHarmony.Mod" };
+        private static readonly string[] ClientSideMods = { "I18NEverywhere.I18NEverywhere" };
+        private static readonly string[] IgnoredMods = { };
 
         private static readonly string[] KnownToWork = {  };
         private static readonly string[] UnsupportedMods = {  };
@@ -71,13 +71,10 @@ namespace CS2M.Mods
                 if (!info.isLoaded)
                     continue;
 
-                Log.Debug(info.asset.name);
-                Log.Debug(info.assemblyFullName);
-
                 foreach (IMod modInstance in info.instances)
                 {
                     // Skip CSM itself
-                    if (modInstance?.GetType() == typeof(CS2M))
+                    if (modInstance?.GetType() == typeof(Mod))
                         continue;
 
                     string modInstanceName = modInstance?.GetType().ToString();

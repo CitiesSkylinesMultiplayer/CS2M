@@ -1,0 +1,19 @@
+{
+  "Options.SECTION[CS2M.CS2M.Mod]": "CS2M",
+  "Options.TAB[CS2M.CS2M.Mod.CS2M]": "CS2M",
+  "Options.GROUP[CS2M.CS2M.Mod.GeneralSettings]": "Allgemeine Einstellungen",
+  "Options.OPTION[CS2M.CS2M.Mod.Settings.LoggingLevel]": "Logging Level",
+  "Options.OPTION_DESCRIPTION[CS2M.CS2M.Mod.Settings.LoggingLevel]": "Setzt das Logging Level der CS2M Mod. Beachte, dass die Level Debug und Trace die Performance beeinträchtigen können.",
+  "CS2M.UI.Multiplayer": "Mehrspieler",
+  "CS2M.UI.IPAddress": "IP Adresse",
+  "CS2M.UI.Port": "Port",
+  "CS2M.UI.Username": "Benutzername",
+  "CS2M.UI.Compatibility": "Kompatibilität",
+  "CS2M.UI.ClientSide": "Clientseitig",
+  "CS2M.UI.Compatibility[Unknown]": "Unbekannt",
+  "CS2M.UI.Compatibility[Unsupported]": "Nicht unterstützt",
+  "CS2M.UI.Compatibility[Supported]": "Unterstützt",
+  "CS2M.UI.Compatibility[KnownWorking]": "Sollte funktionieren",
+  "CS2M.UI.JoiningGame": "Betrete Spiel...",
+  "CS2M.UI.JoinGame": "Spiel beitreten"
+}

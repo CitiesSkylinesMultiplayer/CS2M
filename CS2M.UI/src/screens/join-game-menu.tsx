@@ -2,6 +2,7 @@ import {getModule} from "cs2/modding";
 import {bindValue, trigger, useValue} from "cs2/api";
 import mod from "../../mod.json";
 import {AutoNavigationScope, FocusBoundary, NavigationDirection, NavigationScope} from "cs2/input";
+import {useLocalization} from "cs2/l10n";
 
 export const joinMenuVisible = bindValue<boolean>(mod.id, 'JoinMenuVisible');
 export const modSupport = bindValue<Array<any>>(mod.id, 'modSupport');
@@ -56,17 +57,19 @@ export const JoinGameSettings = () => {
     let usernameValue = useValue(username);
     let enabled = useValue(joinGameEnabled);
 
+    const { translate } = useLocalization();
+
     const focusChange = () => {};
     return (
         <FocusBoundary onFocusChange={focusChange}>
             <div className={GameOptionsCSS.mainRow}>
                 <div className={GameOptionsCSS.optionsColumn}>
                     <NavigationScope focused={null} onChange={() => {}}>
-                        <InputField id="cs2m_ip" label="IP Address" value={ipAddressValue} disabled={!enabled}
+                        <InputField id="cs2m_ip" label={translate("CS2M.UI.IPAddress")} value={ipAddressValue} disabled={!enabled}
                                     onChange={(val: any) => {setVal("SetJoinIpAddress", val)}}></InputField>
-                        <InputField id="cs2m_port" label="Port" value={portValue} disabled={!enabled}
+                        <InputField id="cs2m_port" label={translate("CS2M.UI.Port")} value={portValue} disabled={!enabled}
                                     onChange={(val : any) => {setIntVal("SetJoinPort", val)}}></InputField>
-                        <InputField id="cs2m_user" label="Username" value={usernameValue} disabled={!enabled}
+                        <InputField id="cs2m_user" label={translate("CS2M.UI.Username")} value={usernameValue} disabled={!enabled}
                                     onChange={(val: any) => {setVal("SetJoinUsername", val)}}></InputField>
                     </NavigationScope>
                 </div>
@@ -93,16 +96,18 @@ export const JoinGameMenu = () => {
     const modSupports  = useValue(modSupport);
     const enabled = useValue(joinGameEnabled);
 
+    const { translate } = useLocalization();
+
     const actions = {};
 
     let details = [];
-    let detailsTitle = "";
+    let detailsTitle;
     if (enabled) {
-        detailsTitle = "Compatibility Info";
+        detailsTitle = translate("CS2M.UI.Compatibility");
         for (let support of modSupports) {
-            let support_str = support.support;
+            let support_str = translate("CS2M.UI.Compatibility[" + support.support + "]", support.support);
             if (support.client_side) {
-                support_str = "Client side";
+                support_str = translate("CS2M.UI.ClientSide");
             }
             let color;
             switch (support.support) {
@@ -122,21 +127,21 @@ export const JoinGameMenu = () => {
             details.push(<div style={{color: color}}><Field label={support.name}>{support_str}</Field></div>);
         }
     } else {
-        detailsTitle = "Joining game...";
+        detailsTitle = translate("CS2M.UI.JoiningGame");
     }
 
-    let footer = <FooterButton disabled={!enabled} onSelect={joinGame}>Join Game</FooterButton>;
+    let footer = <FooterButton disabled={!enabled} onSelect={joinGame}>{translate("CS2M.UI.JoinGame")}</FooterButton>;
 
     let content;
     if (visible) {
         content = (
-            <SubScreen title="Multiplayer" onClose={hideJoinGame}>
+            <SubScreen title={translate("CS2M.UI.Multiplayer")} onClose={hideJoinGame}>
                 <InputActionConsumer actions={actions}>
                     <div className={LoadGameScreenCSS.content}>
                         <AutoNavigationScope>
                             <div className={LoadGameScreenCSS.stepContainer}>
                                 <div className={SaveListCSS.saveList + " " + LoadGameScreenCSS.step}>
-                                    <div className={DetailSectionCSS.title}>Join Game</div>
+                                    <div className={DetailSectionCSS.title}>{translate("CS2M.UI.JoinGame")}</div>
                                     <JoinGameSettings></JoinGameSettings>
                                 </div>
                             </div>

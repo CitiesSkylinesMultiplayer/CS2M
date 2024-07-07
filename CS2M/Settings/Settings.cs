@@ -9,12 +9,15 @@ namespace CS2M.Settings
 {
 
     [FileLocation(nameof(CS2M))]
-    [SettingsUITabOrder("CS2M")]
-    [SettingsUIGroupOrder("General Settings")]
-    [SettingsUIShowGroupName("General Settings")]
+    [SettingsUITabOrder(Section)]
+    [SettingsUIGroupOrder(GeneralSettings)]
+    [SettingsUIShowGroupName(GeneralSettings)]
     public class Settings : ModSetting
     {
-        [SettingsUISection("CS2M", "General Settings")]
+        private const string Section = "CS2M";
+        private const string GeneralSettings = "GeneralSettings";
+
+        [SettingsUISection(Section, GeneralSettings)]
         [SettingsUIDropdown(typeof(Settings), nameof(GetLoggingLevels))]
         [SettingsUISetter(typeof (Settings), nameof(OnSetLoggingLevel))]
         public int LoggingLevel { get; set; }
