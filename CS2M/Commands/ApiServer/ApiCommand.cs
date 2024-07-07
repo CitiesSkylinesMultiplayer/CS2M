@@ -10,6 +10,13 @@ using MessagePack.Resolvers;
 
 namespace CS2M.Commands.ApiServer
 {
+    public class SerializerOptions : MessagePackSerializerOptions
+    {
+        public SerializerOptions(IFormatterResolver resolver) : base(resolver)
+        {
+        }
+    }
+
     public class ApiCommand
     {
         public static ApiCommand Instance;
@@ -48,6 +55,8 @@ namespace CS2M.Commands.ApiServer
             return MessagePackSerializer.Serialize(command, _model);
         }
 
+
+
         public void RefreshModel()
         {
             _apiCmdMapping.Clear();
@@ -61,22 +70,27 @@ namespace CS2M.Commands.ApiServer
                     // enable extension packages first
                     MessagePack.Unity.Extension.UnityBlitResolver.Instance,
                     MessagePack.Unity.UnityResolver.Instance,
-                
+
                     // finally use standard resolver
-                    StandardResolver.Instance
+                    BuiltinResolver.Instance, // Try Builtin
+
+                    DynamicGenericResolver.Instance, // Try Array, Tuple, Collection, Enum(Generic Fallback)
+
+                    //DynamicUnionResolver.Instance, // Try Union(Interface)
+                    DynamicObjectResolver.Instance // Try Object
                 );
-                var options = new MessagePackSerializerOptions(resolver).Configure();
-                
+                var options = new SerializerOptions(resolver).Configure();
+
                 // Create instances of the handlers, initialize mappings and register command subclasses in the protobuf model
                 foreach (Type type in apiHandlers)
                 {
                     ApiCommandHandler handler = (ApiCommandHandler)Activator.CreateInstance(type);
                     _apiCmdMapping.Add(handler.GetDataType(), handler);
-                
+
                     // Add subtype to the MsgPack model with all attributes
                     options.SubType(typeof(ApiCommandBase), handler.GetDataType());
                 }
-                
+
                 _model = options.Build();
             }
             catch (Exception ex)

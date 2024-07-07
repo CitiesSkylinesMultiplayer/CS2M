@@ -14,6 +14,13 @@ using MessagePack.Resolvers;
 
 namespace CS2M.Commands
 {
+    public class SerializerOptions : MessagePackSerializerOptions
+    {
+        public SerializerOptions(IFormatterResolver resolver) : base(resolver)
+        {
+        }
+    }
+
     public class CommandInternal
     {
         public static CommandInternal Instance;
@@ -136,27 +143,31 @@ namespace CS2M.Commands
                 Type[] handlers = packets.ToArray();
                 Log.Info($"Initializing data model with {handlers.Length} commands...");
 
-                // Configure MessagePack resolver
                 IFormatterResolver resolver = CompositeResolver.Create(
                     // enable extension packages first
                     MessagePack.Unity.Extension.UnityBlitResolver.Instance,
                     MessagePack.Unity.UnityResolver.Instance,
-                
+
                     // finally use standard resolver
-                    StandardResolver.Instance
+                    BuiltinResolver.Instance, // Try Builtin
+
+                    DynamicGenericResolver.Instance, // Try Array, Tuple, Collection, Enum(Generic Fallback)
+
+                    //DynamicUnionResolver.Instance, // Try Union(Interface)
+                    DynamicObjectResolver.Instance // Try Object
                 );
-                var options = new MessagePackSerializerOptions(resolver).Configure();
-                
+                var options = new SerializerOptions(resolver).Configure();
+
                 // Create instances of the handlers, initialize mappings and register command subclasses in the protobuf model
                 foreach (Type type in handlers)
                 {
                     CommandHandler handler = (CommandHandler)Activator.CreateInstance(type);
                     _cmdMapping.Add(handler.GetDataType(), handler);
-                
+
                     // Add subtype to the MsgPack model with all attributes
                     options.SubType(typeof(CommandBase), handler.GetDataType());
                 }
-                
+
                 _model = options.Build();
             }
             catch (Exception ex)
