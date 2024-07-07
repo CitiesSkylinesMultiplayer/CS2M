@@ -10,7 +10,7 @@ namespace CS2M.Networking
 
         public static NetworkInterface Instance => _instance ?? (_instance = new NetworkInterface());
 
-        private LocalPlayer _localPlayer;
+        private readonly LocalPlayer _localPlayer = new LocalPlayer();
 
         public void OnUpdate()
         {
