@@ -259,8 +259,10 @@ namespace CS2M.Networking
             _apiServer.SendCommand(message);
         }
 
-        public bool StartServer()
+        public bool StartServer(ConnectionConfig connectionConfig)
         {
+            _connectionConfig = connectionConfig;
+
             // Let the user know that we are trying to start the server
             Log.Info($"Attempting to start server on port {_connectionConfig.Port}...");
             

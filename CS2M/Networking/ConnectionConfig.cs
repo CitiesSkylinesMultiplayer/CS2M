@@ -2,13 +2,13 @@
 {
     public class ConnectionConfig
     {
-        public string HostAddress;
+        public readonly string HostAddress;
 
-        public int Port;
+        public readonly int Port;
 
-        public string Password;
+        public readonly string Password;
 
-        public string Token;
+        public readonly string Token;
 
         public ConnectionConfig(string hostAddress, int port, string password)
         {
@@ -32,6 +32,11 @@
         {
             Port = port;
             Password = password;
+        }
+
+        public ConnectionConfig(int port)
+        {
+            Port = port;
         }
 
         public ConnectionConfig()

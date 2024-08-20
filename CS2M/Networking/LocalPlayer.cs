@@ -100,14 +100,16 @@ namespace CS2M.Networking
         }
 
         // INACTIVE -> PLAYING (Server)
-        public bool Playing(int port)
+        public bool Playing(ConnectionConfig connectionConfig)
         {
             if (PlayerStatus != PlayerStatus.INACTIVE)
             {
                 return false;
             }
 
-            bool serverStarted = _networkManager.StartServer();
+            _networkManager = new NetworkManager();
+
+            bool serverStarted = _networkManager.StartServer(connectionConfig);
             if (!serverStarted)
             {
                 return false;

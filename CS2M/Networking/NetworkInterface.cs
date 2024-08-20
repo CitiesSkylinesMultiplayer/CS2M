@@ -22,9 +22,9 @@ namespace CS2M.Networking
             LocalPlayer.TestDirectConnect(connectionConfig);
         }
 
-        public void StartServer(int serverPort)
+        public void StartServer(ConnectionConfig connectionConfig)
         {
-            LocalPlayer.Playing(serverPort);
+            LocalPlayer.Playing(connectionConfig);
         }
 
         public void SendToAll(CommandBase message)
