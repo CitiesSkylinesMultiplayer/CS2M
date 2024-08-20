@@ -31,7 +31,7 @@ namespace CS2M.API
         ///     If this instance is enabled, all found commands
         ///     are added to the protocol.
         /// </summary>
-        public List<Assembly> CommandAssemblies;
+        public readonly List<Assembly> CommandAssemblies = new List<Assembly>();
         
         /// <summary>
         ///     Register all handlers for changes to send to other players.

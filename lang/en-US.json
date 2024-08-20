@@ -20,5 +20,8 @@
   "CS2M.UI.Compatibility[Supported]": "Supported",
   "CS2M.UI.Compatibility[KnownWorking]": "Should work",
   "CS2M.UI.JoiningGame": "Joining game...",
-  "CS2M.UI.JoinGame": "Join game"
+  "CS2M.UI.StartingServer": "Starting server...",
+  "CS2M.UI.JoinGame": "Join game",
+  "CS2M.UI.StartServer": "Start server",
+  "CS2M.UI.HostGame": "Host game"
 }

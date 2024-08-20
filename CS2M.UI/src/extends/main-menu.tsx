@@ -3,24 +3,29 @@ import {MenuButton} from "cs2/ui";
 import {trigger} from "cs2/api";
 import mod from "../../mod.json";
 import {JoinGameMenu} from "../screens/join-game-menu";
+import {HostGameMenu} from "../screens/host-game-menu";
 
 export function showMultiplayerMenu() {
     trigger(mod.id, "ShowMultiplayerMenu");
 }
 
 // Extend TransitionGroupCoordinator as it is the only place we can put the JoinGameMenu
-// Only extend it if it has 5 children => Main Menu
+// Only extend it if it has 5 children => Main Menu or Pause Menu
 export const MenuUIExtensions : ModuleRegistryExtend = (Component) => {
     return (props) => {
         const {children, ...otherProps} = props || {};
-        let joinGameMenu;
+        let menus;
         if (children && children.length == 5) {
-            joinGameMenu = <JoinGameMenu></JoinGameMenu>;
+            menus = 
+                <>
+                    <JoinGameMenu></JoinGameMenu>
+                    <HostGameMenu></HostGameMenu>
+                </>;
         }
         return (
             <Component {...otherProps}>
                 {children}
-                {joinGameMenu}
+                {menus}
             </Component>
         )
     };

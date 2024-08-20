@@ -20,5 +20,8 @@
   "CS2M.UI.Compatibility[Supported]": "Unterstützt",
   "CS2M.UI.Compatibility[KnownWorking]": "Sollte funktionieren",
   "CS2M.UI.JoiningGame": "Betrete Spiel...",
-  "CS2M.UI.JoinGame": "Spiel beitreten"
+  "CS2M.UI.StartingServer": "Server wird gestartet...",
+  "CS2M.UI.JoinGame": "Spiel beitreten",
+  "CS2M.UI.StartServer": "Server starten",
+  "CS2M.UI.HostGame": "Spiel hosten"
 }

@@ -5,6 +5,7 @@ riderModule.iml
 /_ReSharper.Caches/
 **/node_modules/
 .envrc
+assemblies/*.dll
 
 CS2M/Library
 *.sln.DotSettings.user

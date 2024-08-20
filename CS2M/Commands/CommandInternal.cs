@@ -140,7 +140,8 @@ namespace CS2M.Commands
                 IFormatterResolver resolver = CompositeResolver.Create(
                     // enable extension packages first
                     MessagePack.Unity.Extension.UnityBlitResolver.Instance,
-                    MessagePack.Unity.UnityResolver.Instance
+                    MessagePack.Unity.UnityResolver.Instance,
+                    StandardResolver.Instance
                 );
                 var options = MessagePackSerializerOptions.Standard.WithResolver(resolver).Configure();
 
