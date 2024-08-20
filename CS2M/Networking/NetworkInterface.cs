@@ -17,6 +17,16 @@ namespace CS2M.Networking
             LocalPlayer.OnUpdate();
         }
 
+        public void Connect(ConnectionConfig connectionConfig)
+        {
+            LocalPlayer.TestDirectConnect(connectionConfig);
+        }
+
+        public void StartServer(int serverPort)
+        {
+            LocalPlayer.Playing(serverPort);
+        }
+
         public void SendToAll(CommandBase message)
         {
             LocalPlayer.SendToAll(message);
