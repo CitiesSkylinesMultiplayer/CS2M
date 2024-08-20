@@ -4,7 +4,7 @@ namespace CS2M.Commands.ApiServer.Handler
     {
         protected override void Handle(ServerRegistrationCommand command)
         {
-            // Do nothing, this is a packet for the global server
+            // Do nothing, this is a packet for the api server
         }
     }
 }

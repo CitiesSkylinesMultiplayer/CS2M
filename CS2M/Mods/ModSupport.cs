@@ -5,6 +5,7 @@ using Colossal.Serialization.Entities;
 using CS2M.Commands;
 using CS2M.Helpers;
 using CS2M.API;
+using CS2M.Commands.ApiServer;
 using Game;
 using Game.SceneFlow;
 
@@ -91,6 +92,7 @@ namespace CS2M.Mods
 
             // Refresh data model
             CommandInternal.Instance.RefreshModel();
+            ApiCommand.Instance.RefreshModel();
         }
 
         private void OnGamePreload(Purpose purpose, GameMode mode)

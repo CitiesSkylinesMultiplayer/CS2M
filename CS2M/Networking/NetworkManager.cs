@@ -2,8 +2,10 @@
 using System.Net;
 using System.Net.Sockets;
 using CS2M.API.Commands;
+using CS2M.API.Networking;
 using CS2M.Commands;
 using CS2M.Commands.ApiServer;
+using CS2M.Util;
 using LiteNetLib;
 using Timer = System.Timers.Timer;
 
@@ -11,12 +13,19 @@ namespace CS2M.Networking
 {
     public class NetworkManager
     {
+        private const string ConnectionKey = "CSM";
+
         private readonly NetManager _netManager;
         private readonly ApiServer _apiServer;
         private ConnectionConfig _connectionConfig;
+        private IPEndPoint _connectEndpoint;
+        private Timer _timeout;
 
         public event OnNatHolePunchSuccessful NatHolePunchSuccessfulEvent;
         public event OnNatHolePunchFailed NatHolePunchFailedEvent;
+        public event OnClientConnectSuccessful ClientConnectSuccessfulEvent;
+        public event OnClientConnectFailed ClientConnectFailedEvent;
+        public event OnClientDisconnect ClientDisconnectEvent;
 
         public NetworkManager()
         {
@@ -35,6 +44,7 @@ namespace CS2M.Networking
             listener.PeerConnectedEvent += ListenerOnPeerConnectedEvent;
             listener.PeerDisconnectedEvent += ListenerOnPeerDisconnectedEvent;
             listener.NetworkLatencyUpdateEvent += ListenerOnNetworkLatencyUpdateEvent;
+            listener.ConnectionRequestEvent += ListenerOnConnectionRequestEvent;
         }
 
         public bool InitConnect(ConnectionConfig connectionConfig)
@@ -64,14 +74,13 @@ namespace CS2M.Networking
 
         public bool SetupNatConnect()
         {
-            IPEndPoint directConnectEndpoint = null;
+            IPEndPoint directEndpoint = null;
             if (!_connectionConfig.IsTokenBased())
             {
                 // Given string to IP address (resolves domain names).
                 try
                 {
-                    directConnectEndpoint = new IPEndPoint(NetUtils.ResolveAddress(_connectionConfig.HostAddress),
-                        _connectionConfig.Port);
+                    directEndpoint = IPUtil.CreateIPEndPoint(_connectionConfig.HostAddress, _connectionConfig.Port);
                 }
                 catch
                 {
@@ -82,22 +91,24 @@ namespace CS2M.Networking
 
 
             EventBasedNatPunchListener natPunchListener = new EventBasedNatPunchListener();
-            Timer timeout = new Timer();
-            timeout.Interval = 5000;
-            timeout.AutoReset = false;
-            timeout.Elapsed += (sender, args) =>
+            _timeout = new Timer();
+            _timeout.Interval = 5000;
+            _timeout.AutoReset = false;
+            _timeout.Elapsed += (sender, args) =>
             {
-                NatHolePunchFailedEvent?.Invoke(directConnectEndpoint);
+                _connectEndpoint = directEndpoint;
+                NatHolePunchFailedEvent?.Invoke();
             };
 
             // Callback on for each possible IP address to connect to the server.
             // Can potentially be called multiple times (local and public IP address).
             natPunchListener.NatIntroductionSuccess += (point, type, token) =>
             {
-                bool? eventResult = NatHolePunchSuccessfulEvent?.Invoke(point);
+                _connectEndpoint = point;
+                bool? eventResult = NatHolePunchSuccessfulEvent?.Invoke();
                 if (eventResult != null && eventResult.Value)
                 {
-                    timeout.Enabled = false;
+                    _timeout.Enabled = false;
                 }
             };
 
@@ -106,9 +117,9 @@ namespace CS2M.Networking
             {
                 connect = "token:" + _connectionConfig.Token;
             }
-            else if (directConnectEndpoint != null)
+            else if (directEndpoint != null)
             {
-                connect = "ip:" + directConnectEndpoint.Address;
+                connect = "ip:" + directEndpoint.Address;
             }
 
             // Register listener and send request to global server
@@ -116,7 +127,7 @@ namespace CS2M.Networking
             try
             {
                 _netManager.NatPunchModule.SendNatIntroduceRequest(
-                    new IPEndPoint(IpAddress.GetIpv4(Mod.ModSettings.ApiServer), Mod.ModSettings.GetApiServerPort()), connect);
+                    IPUtil.CreateIP4EndPoint(Mod.ModSettings.ApiServer, Mod.ModSettings.GetApiServerPort()), connect);
             }
             catch (Exception e)
             {
@@ -127,17 +138,64 @@ namespace CS2M.Networking
             return true;
         }
 
+        public bool Connect()
+        {
+            if (_connectEndpoint == null)
+            {
+                Log.Error($"No valid endpoint to connect to.");
+                return false;
+            }
+
+            try
+            {
+                _netManager.Connect(_connectEndpoint, ConnectionKey);
+                _timeout = new Timer();
+                _timeout.Interval = 5000;
+                _timeout.AutoReset = false;
+                _timeout.Elapsed += (sender, args) =>
+                {
+                    ClientConnectFailedEvent?.Invoke();
+                };
+            }
+            catch (Exception ex)
+            {
+                Log.Error($"Failed to connect to {_connectEndpoint.Address}:{_connectEndpoint.Port}", ex);
+                return false;
+            }
+
+            return true;
+        }
+
         private void ListenerOnNetworkReceiveEvent(NetPeer peer, NetPacketReader reader, byte channel,
             DeliveryMethod deliveryMethod)
         {
+            // TODO: Process received data
         }
 
         private void ListenerOnPeerConnectedEvent(NetPeer peer)
         {
+            if (NetworkInterface.Instance.LocalPlayer.PlayerType == PlayerType.CLIENT)
+            {
+                _timeout.Enabled = false;
+                ClientConnectSuccessfulEvent?.Invoke();
+            } 
+            else if (NetworkInterface.Instance.LocalPlayer.PlayerType == PlayerType.SERVER)
+            {
+                // TODO: Handle peer connect on server
+            }
         }
 
         private void ListenerOnPeerDisconnectedEvent(NetPeer peer, DisconnectInfo disconnectInfo)
         {
+            if (NetworkInterface.Instance.LocalPlayer.PlayerType == PlayerType.CLIENT)
+            {
+                // TODO: Use disconnect info
+                ClientDisconnectEvent?.Invoke();
+            } 
+            else if (NetworkInterface.Instance.LocalPlayer.PlayerType == PlayerType.SERVER)
+            {
+                // TODO: Handle peer disconnect on server
+            }
         }
 
         private void ListenerOnNetworkErrorEvent(IPEndPoint endpoint, SocketError socketError)
@@ -150,9 +208,20 @@ namespace CS2M.Networking
         {
         }
 
-        public delegate bool OnNatHolePunchSuccessful(IPEndPoint endpoint);
+        private void ListenerOnConnectionRequestEvent(ConnectionRequest request)
+        {
+            request.AcceptIfKey(ConnectionKey);
+        }
 
-        public delegate bool OnNatHolePunchFailed(IPEndPoint endpoint);
+        public delegate bool OnNatHolePunchSuccessful();
+
+        public delegate bool OnNatHolePunchFailed();
+
+        public delegate bool OnClientConnectSuccessful();
+        
+        public delegate bool OnClientConnectFailed();
+
+        public delegate bool OnClientDisconnect();
 
         public void ProcessEvents()
         {
@@ -188,6 +257,37 @@ namespace CS2M.Networking
         public void SendToApiServer(ApiCommandBase message)
         {
             _apiServer.SendCommand(message);
+        }
+
+        public bool StartServer()
+        {
+            // Let the user know that we are trying to start the server
+            Log.Info($"Attempting to start server on port {_connectionConfig.Port}...");
+            
+            // Attempt to start the server
+            bool result = _netManager.Start(_connectionConfig.Port);
+
+            // If the server has not started, tell the user and return false.
+            if (!result)
+            {
+                Log.Error("The server failed to start.");
+                Stop(); // Make sure the server is fully stopped
+                return false;
+            }
+            
+            //TODO: NAT UPnP open Port
+            //TODO: Check if port is reachable
+            
+            // Update the console to let the user know the server is running
+            Log.Info("The server has started.");
+
+            return true;
+        }
+
+        public void Stop()
+        {
+            _netManager.Stop();
+            Log.Info("NetworkManager stopped.");
         }
     }
 }

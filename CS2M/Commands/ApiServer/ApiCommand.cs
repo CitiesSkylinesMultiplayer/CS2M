@@ -48,8 +48,6 @@ namespace CS2M.Commands.ApiServer
             return MessagePackSerializer.Serialize(command, _model);
         }
 
-
-
         public void RefreshModel()
         {
             _apiCmdMapping.Clear();

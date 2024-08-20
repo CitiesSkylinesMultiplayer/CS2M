@@ -1,5 +1,6 @@
 ﻿using Colossal.IO.AssetDatabase;
 using CS2M.Commands;
+using CS2M.Commands.ApiServer;
 using CS2M.Mods;
 using CS2M.Networking;
 using CS2M.UI;
@@ -15,6 +16,7 @@ namespace CS2M
         public void OnLoad(UpdateSystem updateSystem)
         {
             CommandInternal.Instance = new CommandInternal();
+            ApiCommand.Instance = new ApiCommand();
 
             ModSettings = new Settings.Settings(this);
             ModSettings.RegisterInOptionsUI();

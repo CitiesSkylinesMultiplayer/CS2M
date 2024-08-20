@@ -1,6 +1,6 @@
 ﻿using System;
-using System.Net;
 using CS2M.Commands.ApiServer;
+using CS2M.Util;
 using LiteNetLib;
 
 namespace CS2M.Networking
@@ -23,11 +23,10 @@ namespace CS2M.Networking
         {
             try
             {
-                IPAddress apiServer = IpAddress.GetIpv4(Mod.ModSettings.ApiServer);
                 _netManager.SendUnconnectedMessage(ApiCommand.Instance.Serialize(message),
-                    new IPEndPoint(apiServer, Mod.ModSettings.GetApiServerPort()));
+                    IPUtil.CreateIP4EndPoint(Mod.ModSettings.ApiServer, Mod.ModSettings.GetApiServerPort()));
                 Log.Debug(
-                    $"Sending {message.GetType().Name} to API server at {apiServer}:{Mod.ModSettings.ApiServerPort}");
+                    $"Sending {message.GetType().Name} to API server at {Mod.ModSettings.ApiServer}:{Mod.ModSettings.ApiServerPort}");
             }
             catch (Exception e)
             {

@@ -1,5 +1,4 @@
-﻿using System.Net;
-using CS2M.API.Commands;
+﻿using CS2M.API.Commands;
 using CS2M.API.Networking;
 using CS2M.Commands.ApiServer;
 using LiteNetLib;
@@ -16,11 +15,19 @@ namespace CS2M.Networking
 
         public bool GetServerInfo(ConnectionConfig connectionConfig)
         {
+            if (PlayerStatus != PlayerStatus.INACTIVE)
+            {
+                return false;
+            }
             // Check if is in main menu
 
             _networkManager = new NetworkManager();
 
             _networkManager.NatHolePunchSuccessfulEvent += NatConnect;
+            _networkManager.NatHolePunchFailedEvent += DirectConnect;
+            _networkManager.ClientConnectSuccessfulEvent += DownloadingMap;
+            _networkManager.ClientConnectFailedEvent += Inactive;
+            _networkManager.ClientDisconnectEvent += Inactive;
 
             if (!_networkManager.InitConnect(connectionConfig))
             {
@@ -37,33 +44,106 @@ namespace CS2M.Networking
             return true;
         }
 
-        public bool NatConnect(IPEndPoint endpoint)
+        public bool NatConnect()
         {
             return true;
         }
 
-        public void DirectConnect()
+        // TODO: For testing purposes only!
+        public bool TestDirectConnect(ConnectionConfig connectionConfig)
         {
+            if (PlayerStatus != PlayerStatus.INACTIVE)
+            {
+                return false;
+            }
+            
+            if (!_networkManager.InitConnect(connectionConfig))
+            {
+                return false;
+            }
+
+            PlayerStatus = PlayerStatus.NAT_CONNECT;
+            return DirectConnect();
         }
 
-        public void DownloadingMap()
+        public bool DirectConnect()
         {
+            if (PlayerStatus != PlayerStatus.GET_SERVER_INFO ||
+                PlayerStatus != PlayerStatus.NAT_CONNECT)
+            {
+                return false;
+            }
+
+            if (!_networkManager.Connect())
+            {
+                Inactive();
+                return false;
+            }
+            
+            PlayerStatus = PlayerStatus.DIRECT_CONNECT;
+            return true;
+        }
+
+        public bool DownloadingMap()
+        {
+            // TODO: Change, when implemented Map transfer
+            return Playing();
         }
 
         public void LoadingMap()
         {
         }
 
-        public void Playing()
+        public bool Playing()
         {
+            return true;
+        }
+
+        // INACTIVE -> PLAYING (Server)
+        public bool Playing(int port)
+        {
+            if (PlayerStatus != PlayerStatus.INACTIVE)
+            {
+                return false;
+            }
+
+            bool serverStarted = _networkManager.StartServer();
+            if (!serverStarted)
+            {
+                return false;
+            }
+            
+            //TODO: Setup server variables (player list, etc.)
+
+            PlayerStatus = PlayerStatus.PLAYING;
+            
+            return true;
         }
 
         public void Blocked()
         {
         }
 
-        public void Inactive()
+        // PLAYING -> INACTIVE
+        public bool Inactive()
         {
+            // if (PlayerStatus != PlayerStatus.PLAYING)
+            // {
+            //     return false;
+            // }
+
+            if (PlayerType == PlayerType.SERVER)
+            {
+                //TODO: Clear server variables (player list, etc.)
+            } 
+            else if (PlayerType == PlayerType.CLIENT)
+            {
+                //TODO: Clean-Up client
+            }
+            _networkManager.Stop();
+
+            PlayerStatus = PlayerStatus.INACTIVE;
+            return true;
         }
 
         public void OnUpdate()

@@ -4,7 +4,7 @@
     {
         protected override void Handle(PortCheckRequestCommand command)
         {
-            // Do nothing, this is a packet for the global server
+            // Do nothing, this is a packet for the api server
         }
     }
 }

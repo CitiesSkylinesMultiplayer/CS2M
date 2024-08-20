@@ -10,23 +10,23 @@ namespace CS2M.Networking
 
         public static NetworkInterface Instance => _instance ?? (_instance = new NetworkInterface());
 
-        private readonly LocalPlayer _localPlayer = new LocalPlayer();
+        internal readonly LocalPlayer LocalPlayer = new LocalPlayer();
 
         public void OnUpdate()
         {
-            _localPlayer.OnUpdate();
+            LocalPlayer.OnUpdate();
         }
 
         public void SendToAll(CommandBase message)
         {
-            _localPlayer.SendToAll(message);
+            LocalPlayer.SendToAll(message);
         }
 
         public void SendToClient(Player player, CommandBase message)
         {
             if (player is RemotePlayer remotePlayer)
             {
-                _localPlayer.SendToClient(remotePlayer.NetPeer, message);
+                LocalPlayer.SendToClient(remotePlayer.NetPeer, message);
             }
             else
             {
@@ -36,17 +36,17 @@ namespace CS2M.Networking
 
         public void SendToServer(CommandBase message)
         {
-            _localPlayer.SendToServer(message);
+            LocalPlayer.SendToServer(message);
         }
 
         public void SendToApiServer(ApiCommandBase message)
         {
-            _localPlayer.SendToApiServer(message);
+            LocalPlayer.SendToApiServer(message);
         }
 
         public void SendToClients(CommandBase message)
         {
-            _localPlayer.SendToClients(message);
+            LocalPlayer.SendToClients(message);
         }
     }
 }
