@@ -46,7 +46,7 @@
 
         public bool IsTokenBased()
         {
-            return Token.Length != 0;
+            return !string.IsNullOrEmpty(Token);
         }
     }
 }

@@ -46,24 +46,19 @@ namespace CS2M.Networking
 
         public bool NatConnect()
         {
-            return true;
-        }
-
-        // TODO: For testing purposes only!
-        public bool TestDirectConnect(ConnectionConfig connectionConfig)
-        {
-            if (PlayerStatus != PlayerStatus.INACTIVE)
+            if (PlayerStatus != PlayerStatus.GET_SERVER_INFO)
             {
                 return false;
             }
             
-            if (!_networkManager.InitConnect(connectionConfig))
+            if (!_networkManager.Connect())
             {
+                Inactive();
                 return false;
             }
-
+            
             PlayerStatus = PlayerStatus.NAT_CONNECT;
-            return DirectConnect();
+            return true;
         }
 
         public bool DirectConnect()

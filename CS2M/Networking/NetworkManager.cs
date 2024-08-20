@@ -20,6 +20,7 @@ namespace CS2M.Networking
         private ConnectionConfig _connectionConfig;
         private IPEndPoint _connectEndpoint;
         private Timer _timeout;
+        private bool _pollNatEvent = false;
 
         public event OnNatHolePunchSuccessful NatHolePunchSuccessfulEvent;
         public event OnNatHolePunchFailed NatHolePunchFailedEvent;
@@ -89,6 +90,7 @@ namespace CS2M.Networking
                 }
             }
 
+            _pollNatEvent = true;
 
             EventBasedNatPunchListener natPunchListener = new EventBasedNatPunchListener();
             _timeout = new Timer();
@@ -96,6 +98,7 @@ namespace CS2M.Networking
             _timeout.AutoReset = false;
             _timeout.Elapsed += (sender, args) =>
             {
+                _pollNatEvent = false;
                 _connectEndpoint = directEndpoint;
                 NatHolePunchFailedEvent?.Invoke();
             };
@@ -104,6 +107,7 @@ namespace CS2M.Networking
             // Can potentially be called multiple times (local and public IP address).
             natPunchListener.NatIntroductionSuccess += (point, type, token) =>
             {
+                _pollNatEvent = false;
                 _connectEndpoint = point;
                 bool? eventResult = NatHolePunchSuccessfulEvent?.Invoke();
                 if (eventResult != null && eventResult.Value)
@@ -226,7 +230,10 @@ namespace CS2M.Networking
         public void ProcessEvents()
         {
             // Poll for new events
-            _netManager.NatPunchModule.PollEvents();
+            if (_pollNatEvent)
+            {
+                _netManager.NatPunchModule.PollEvents();
+            }
             _netManager.PollEvents();
             // Trigger keepalive to api server
             _apiServer.KeepAlive(_connectionConfig);

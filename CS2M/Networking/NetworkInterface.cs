@@ -19,7 +19,7 @@ namespace CS2M.Networking
 
         public void Connect(ConnectionConfig connectionConfig)
         {
-            LocalPlayer.TestDirectConnect(connectionConfig);
+            LocalPlayer.GetServerInfo(connectionConfig);
         }
 
         public void StartServer(ConnectionConfig connectionConfig)
