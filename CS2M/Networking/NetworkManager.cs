@@ -132,6 +132,7 @@ namespace CS2M.Networking
             {
                 _netManager.NatPunchModule.SendNatIntroduceRequest(
                     IPUtil.CreateIP4EndPoint(Mod.ModSettings.ApiServer, Mod.ModSettings.GetApiServerPort()), connect);
+                _timeout.Start();
             }
             catch (Exception e)
             {
@@ -146,13 +147,12 @@ namespace CS2M.Networking
         {
             if (_connectEndpoint == null)
             {
-                Log.Error($"No valid endpoint to connect to.");
+                Log.Error("No valid endpoint to connect to.");
                 return false;
             }
 
             try
             {
-                _netManager.Connect(_connectEndpoint, ConnectionKey);
                 _timeout = new Timer();
                 _timeout.Interval = 5000;
                 _timeout.AutoReset = false;
@@ -160,6 +160,9 @@ namespace CS2M.Networking
                 {
                     ClientConnectFailedEvent?.Invoke();
                 };
+                
+                _netManager.Connect(_connectEndpoint, ConnectionKey);
+                _timeout.Start();
             }
             catch (Exception ex)
             {
