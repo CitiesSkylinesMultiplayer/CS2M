@@ -1,0 +1,33 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+    <PropertyGroup>
+        <TargetFramework>net472</TargetFramework>
+    </PropertyGroup>
+
+    <ItemGroup>
+      <ProjectReference Include="..\CS2M.API\CS2M.API.csproj" />
+    </ItemGroup>
+
+    <Import Project="$([System.Environment]::GetEnvironmentVariable('CSII_TOOLPATH', 'EnvironmentVariableTarget.Process'))\Mod.props"/>
+
+    <ItemGroup>
+        <Reference Include="Colossal.Core">
+          <HintPath>..\..\..\..\games\steam\steamapps\common\Cities Skylines II\Cities2_Data\Managed\Colossal.Core.dll</HintPath>
+        </Reference>
+        <Reference Include="Colossal.Logging">
+            <Private>false</Private>
+        </Reference>
+        <Reference Include="Game">
+          <HintPath>..\..\..\..\games\steam\steamapps\common\Cities Skylines II\Cities2_Data\Managed\Game.dll</HintPath>
+        </Reference>
+        <Reference Include="Unity.Collections">
+          <HintPath>..\..\..\..\games\steam\steamapps\common\Cities Skylines II\Cities2_Data\Managed\Unity.Collections.dll</HintPath>
+        </Reference>
+        <Reference Include="Unity.Entities">
+          <HintPath>..\..\..\..\games\steam\steamapps\common\Cities Skylines II\Cities2_Data\Managed\Unity.Entities.dll</HintPath>
+        </Reference>
+        <Reference Include="UnityEngine.CoreModule">
+          <HintPath>..\..\..\..\games\steam\steamapps\common\Cities Skylines II\Cities2_Data\Managed\UnityEngine.CoreModule.dll</HintPath>
+        </Reference>
+    </ItemGroup>
+</Project>

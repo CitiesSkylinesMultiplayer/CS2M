@@ -6,6 +6,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CS2M.API", "CS2M.API\CS2M.A
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CS2M.Test", "CS2M.Test\CS2M.Test.csproj", "{B8CF0DB3-7863-4BED-9863-FCF274433A97}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CS2M.BaseGame", "CS2M.BaseGame\CS2M.BaseGame.csproj", "{F7AF1B61-B1A1-42C6-889F-90CF7CF79FB7}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -24,5 +26,9 @@ Global
 		{B8CF0DB3-7863-4BED-9863-FCF274433A97}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{B8CF0DB3-7863-4BED-9863-FCF274433A97}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{B8CF0DB3-7863-4BED-9863-FCF274433A97}.Release|Any CPU.Build.0 = Release|Any CPU
+		{F7AF1B61-B1A1-42C6-889F-90CF7CF79FB7}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{F7AF1B61-B1A1-42C6-889F-90CF7CF79FB7}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{F7AF1B61-B1A1-42C6-889F-90CF7CF79FB7}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{F7AF1B61-B1A1-42C6-889F-90CF7CF79FB7}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 EndGlobal

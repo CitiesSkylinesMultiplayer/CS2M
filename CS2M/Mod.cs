@@ -21,14 +21,13 @@ namespace CS2M
             ModSettings = new Settings.Settings(this);
             ModSettings.RegisterInOptionsUI();
             AssetDatabase.global.LoadSettings(nameof(CS2M), ModSettings, new Settings.Settings(this));
-            
-            updateSystem.UpdateBefore<NetworkingSystem>(SystemUpdatePhase.PreSimulation);
 
             ModSettings.OnSetLoggingLevel(ModSettings.LoggingLevel);
 
             ModSupport.Instance.Init();
 
             // Set up systems
+            updateSystem.UpdateBefore<NetworkingSystem>(SystemUpdatePhase.PreSimulation);
             updateSystem.UpdateAt<UISystem>(SystemUpdatePhase.UIUpdate);
         }
 

@@ -71,6 +71,7 @@
 
     <ItemGroup>
         <ProjectReference Include="..\CS2M.API\CS2M.API.csproj" />
+        <ProjectReference Include="..\CS2M.BaseGame\CS2M.BaseGame.csproj" />
     </ItemGroup>
 
     <ItemGroup>
