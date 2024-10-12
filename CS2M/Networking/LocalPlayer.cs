@@ -63,7 +63,7 @@ namespace CS2M.Networking
 
         public bool DirectConnect()
         {
-            if (PlayerStatus != PlayerStatus.GET_SERVER_INFO ||
+            if (PlayerStatus != PlayerStatus.GET_SERVER_INFO &&
                 PlayerStatus != PlayerStatus.NAT_CONNECT)
             {
                 return false;
