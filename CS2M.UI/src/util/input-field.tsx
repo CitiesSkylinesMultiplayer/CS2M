@@ -1,23 +1,28 @@
 import {getModule} from "cs2/modding";
-import {AutoNavigationScope, NavigationDirection} from "cs2/input";
+import {useLocalization} from "cs2/l10n";
 
+// Props: label, disabled, error, value, onChange, maxLength
 export const InputField = (props : any) => {
-    const ColumnFieldCSS = getModule('game-ui/menu/components/shared/game-options/field/column-field.module.scss', 'classes');
-    const CityNameFieldCSS = getModule('game-ui/menu/components/shared/game-options/city-name-field/city-name-field.module.scss', 'classes');
-    const OptionField = getModule('game-ui/menu/widgets/field/field.tsx', 'OptionField');
-    const EllipsisTextInput = getModule('game-ui/common/input/text/ellipsis-text-input/ellipsis-text-input.tsx', 'EllipsisTextInput');
+    const FocusableEditorItem = getModule('game-ui/editor/widgets/item/editor-item.tsx', 'FocusableEditorItem');
+    const ErrorLabel = getModule('game-ui/editor/widgets/label/error-label.tsx', 'ErrorLabel');
+    const EditorCSS = getModule('game-ui/editor/widgets/item/editor-item.module.scss', 'classes');
+    const StringInputField = getModule('game-ui/editor/widgets/fields/string-input-field.tsx', 'StringInputField');
 
-    const label = props.label ?? "";
+    const { translate } = useLocalization();
 
     return (
-        <OptionField id={props.id} label={label} theme={ColumnFieldCSS}>
-            <div className={CityNameFieldCSS.cityNameField}>
-                <AutoNavigationScope direction={NavigationDirection.Horizontal}>
-                    <EllipsisTextInput value={props.value} vkTitle={label} maxLength="85" onChange={props.onChange} disabled={props.disabled}>
-
-                    </EllipsisTextInput>
-                </AutoNavigationScope>
+        <FocusableEditorItem disabled={props.disabled}>
+            <div className={EditorCSS.row}>
+                <div className={EditorCSS.label}>
+                    {translate(props.label)}
+                </div>
+                <div className={EditorCSS.control}>
+                    <StringInputField className={props.error ? EditorCSS.errorBorder : null} value={props.value} onChange={props.onChange} maxLength={props.maxLength ?? 85}>
+                    </StringInputField>
+                </div>
             </div>
-        </OptionField>
+            <ErrorLabel visible={!!props.error} className={EditorCSS.labelRight} displayName={props.error}>
+            </ErrorLabel>
+        </FocusableEditorItem>
     )
 }

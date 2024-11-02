@@ -10,17 +10,18 @@ export const modSupport = bindValue<Array<any>>(mod.id, 'modSupport');
 export const port = bindValue<number>(mod.id, 'HostPort');
 export const username = bindValue<string>(mod.id, 'Username');
 export const hostGameEnabled = bindValue<boolean>(mod.id, 'HostGameEnabled');
+export const playerStatus = bindValue<string>(mod.id, 'PlayerStatus');
 
 export function hideHostGame() {
     trigger(mod.id, "HideHostGameMenu");
 }
 
-export function setVal(name: string, event: any) {
-    trigger(mod.id, name, event.target.value);
+export function setVal(name: string, value: any) {
+    trigger(mod.id, name, value);
 }
 
-export function setIntVal(name: string, event: any) {
-    trigger(mod.id, name, parseInt(event.target.value));
+export function setIntVal(name: string, value: any) {
+    trigger(mod.id, name, parseInt(value));
 }
 
 export function hostGame() {
@@ -34,17 +35,15 @@ export const HostGameSettings = () => {
     let usernameValue = useValue(username);
     let enabled = useValue(hostGameEnabled);
 
-    const { translate } = useLocalization();
-
     const focusChange = () => {};
     return (
         <FocusBoundary onFocusChange={focusChange}>
             <div className={GameOptionsCSS.mainRow}>
                 <div className={GameOptionsCSS.optionsColumn}>
                     <NavigationScope focused={null} onChange={() => {}}>
-                        <InputField id="cs2m_port" label={translate("CS2M.UI.Port")} value={portValue} disabled={!enabled}
+                        <InputField label={"CS2M.UI.Port"} value={portValue} disabled={!enabled}
                                     onChange={(val : any) => {setIntVal("SetHostPort", val)}}></InputField>
-                        <InputField id="cs2m_user" label={translate("CS2M.UI.Username")} value={usernameValue} disabled={!enabled}
+                        <InputField label={"CS2M.UI.Username"} value={usernameValue} disabled={!enabled}
                                     onChange={(val: any) => {setVal("SetUsername", val)}}></InputField>
                     </NavigationScope>
                 </div>
@@ -70,6 +69,7 @@ export const HostGameMenu = () => {
     const visible : boolean = useValue(hostMenuVisible);
     const modSupports  = useValue(modSupport);
     const enabled = useValue(hostGameEnabled);
+    const status = useValue(playerStatus);
 
     const { translate } = useLocalization();
 
@@ -102,7 +102,7 @@ export const HostGameMenu = () => {
             details.push(<div style={{color: color}}><Field label={support.name}>{support_str}</Field></div>);
         }
     } else {
-        detailsTitle = translate("CS2M.UI.StartingServer");
+        detailsTitle = status ?? translate("CS2M.UI.StartingServer");
     }
 
     let footer = <FooterButton disabled={!enabled} onSelect={hostGame}>{translate("CS2M.UI.StartServer")}</FooterButton>;

@@ -17,12 +17,12 @@ export function hideJoinGame() {
     trigger(mod.id, "HideJoinGameMenu");
 }
 
-export function setVal(name: string, event: any) {
-    trigger(mod.id, name, event.target.value);
+export function setVal(name: string, value: any) {
+    trigger(mod.id, name, value);
 }
 
-export function setIntVal(name: string, event: any) {
-    trigger(mod.id, name, parseInt(event.target.value));
+export function setIntVal(name: string, value: any) {
+    trigger(mod.id, name, parseInt(value));
 }
 
 export function joinGame() {
@@ -49,11 +49,11 @@ export const JoinGameSettings = () => {
             <div className={GameOptionsCSS.mainRow}>
                 <div className={GameOptionsCSS.optionsColumn}>
                     <NavigationScope focused={null} onChange={() => {}}>
-                        <InputField id="cs2m_ip" label={translate("CS2M.UI.IPAddress")} value={ipAddressValue} disabled={!enabled}
+                        <InputField label={"CS2M.UI.IPAddress"} value={ipAddressValue} disabled={!enabled}
                                     onChange={(val: any) => {setVal("SetJoinIpAddress", val)}}></InputField>
-                        <InputField id="cs2m_port" label={translate("CS2M.UI.Port")} value={portValue} disabled={!enabled}
+                        <InputField label={"CS2M.UI.Port"} value={portValue} disabled={!enabled}
                                     onChange={(val : any) => {setIntVal("SetJoinPort", val)}}></InputField>
-                        <InputField id="cs2m_user" label={translate("CS2M.UI.Username")} value={usernameValue} disabled={!enabled}
+                        <InputField label={"CS2M.UI.Username"} value={usernameValue} disabled={!enabled}
                                     onChange={(val: any) => {setVal("SetUsername", val)}}></InputField>
                     </NavigationScope>
                 </div>

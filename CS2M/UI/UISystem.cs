@@ -1,6 +1,7 @@
 using System.Collections.Generic;
 using Colossal.Serialization.Entities;
 using Colossal.UI.Binding;
+using CS2M.API.Networking;
 using CS2M.Mods;
 using CS2M.Networking;
 using Game;
@@ -23,6 +24,7 @@ namespace CS2M.UI
         private ValueBinding<string> _username;
         private ValueBinding<bool> _joinGameEnabled;
         private ValueBinding<bool> _hostGameEnabled;
+        private ValueBinding<string> _playerStatus;
 
         private ValueBinding<List<ModSupportStatus>> _modSupportStatus;
 
@@ -75,6 +77,7 @@ namespace CS2M.UI
             AddBinding(_joinGameEnabled = new ValueBinding<bool>(nameof(CS2M), "JoinGameEnabled", true));
             AddBinding(_hostGameEnabled = new ValueBinding<bool>(nameof(CS2M), "HostGameEnabled", true));
 
+            AddBinding(_playerStatus = new ValueBinding<string>(nameof(CS2M), "PlayerStatus", ""));
         }
 
         private void RefreshModSupport()
@@ -138,9 +141,9 @@ namespace CS2M.UI
             _hostGameEnabled.Update(false);
         }
 
-        public void SetGameState(/*PlayerStatus status*/)
+        public void SetGameState(PlayerStatus status)
         {
-
+            _playerStatus.Update(status.ToString());
         }
 
         protected override void OnGameLoadingComplete(Purpose purpose, GameMode mode)
