@@ -1,12 +1,14 @@
-﻿using System;
-using Colossal.Logging;
+﻿using Colossal.Logging;
+using System;
 
 namespace CS2M
 {
     public static class Log
     {
-        public static ILog Logger { get; } = LogManager.GetLogger(nameof(CS2M))
-            .SetShowsErrorsInUI(true).SetEffectiveness(Level.Info).SetLogStackTrace(false);
+        public static ILog Logger { get; } = LogManager.GetLogger(Mod.Name)
+            .SetShowsErrorsInUI(true)
+            .SetEffectiveness(Level.Info)
+            .SetLogStackTrace(false);
 
         public static void SetLoggingLevel(Level loggingLevel)
         {
@@ -43,6 +45,11 @@ namespace CS2M
         public static void Debug(string message)
         {
             Logger.Debug(message);
+        }
+
+        public static void Trace(string message)
+        {
+            Logger.Trace(message);
         }
     }
 }
