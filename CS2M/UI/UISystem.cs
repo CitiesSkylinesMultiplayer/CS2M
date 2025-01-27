@@ -51,16 +51,20 @@ namespace CS2M.UI
             AddBinding(new TriggerBinding(Mod.Name, "HideJoinGameMenu", HideJoinGameMenu));
             AddBinding(new TriggerBinding(Mod.Name, "HideHostGameMenu", HideHostGameMenu));
 
-            AddBinding(new TriggerBinding<string>(Mod.Name, "SetJoinIpAddress", ip => {
+            AddBinding(new TriggerBinding<string>(Mod.Name, "SetJoinIpAddress", ip =>
+            {
                 _joinIPAddress.Update(ip);
             }));
-            AddBinding(new TriggerBinding<int>(Mod.Name, "SetJoinPort", port => {
+            AddBinding(new TriggerBinding<int>(Mod.Name, "SetJoinPort", port =>
+            {
                 _joinPort.Update(port);
             }));
-            AddBinding(new TriggerBinding<int>(Mod.Name, "SetHostPort", port => {
+            AddBinding(new TriggerBinding<int>(Mod.Name, "SetHostPort", port =>
+            {
                 _hostPort.Update(port);
             }));
-            AddBinding(new TriggerBinding<string>(Mod.Name, "SetUsername", username => {
+            AddBinding(new TriggerBinding<string>(Mod.Name, "SetUsername", username =>
+            {
                 _username.Update(username);
             }));
 
