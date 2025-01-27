@@ -1,7 +1,7 @@
-﻿using System;
-using CS2M.Commands.ApiServer;
+﻿using CS2M.Commands.ApiServer;
 using CS2M.Util;
 using LiteNetLib;
+using System;
 
 namespace CS2M.Networking
 {
@@ -24,13 +24,13 @@ namespace CS2M.Networking
             try
             {
                 _netManager.SendUnconnectedMessage(ApiCommand.Instance.Serialize(message),
-                    IPUtil.CreateIP4EndPoint(Mod.ModSettings.ApiServer, Mod.ModSettings.GetApiServerPort()));
+                    IPUtil.CreateIP4EndPoint(Mod.Instance.Settings.ApiServer, Mod.Instance.Settings.GetApiServerPort()));
                 Log.Debug(
-                    $"Sending {message.GetType().Name} to API server at {Mod.ModSettings.ApiServer}:{Mod.ModSettings.ApiServerPort}");
+                    $"Sending {message.GetType().Name} to API server at {Mod.Instance.Settings.ApiServer}:{Mod.Instance.Settings.ApiServerPort}");
             }
             catch (Exception e)
             {
-                Log.Warn($"Could not send message to API server at {Mod.ModSettings.ApiServer}:{Mod.ModSettings.ApiServerPort}: {e}");
+                Log.Warn($"Could not send message to API server at {Mod.Instance.Settings.ApiServer}:{Mod.Instance.Settings.ApiServerPort}: {e}");
             }
         }
 

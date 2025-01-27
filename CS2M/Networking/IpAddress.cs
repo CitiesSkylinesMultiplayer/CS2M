@@ -1,8 +1,8 @@
-﻿using System;
+﻿using CS2M.Util;
+using System;
 using System.Linq;
 using System.Net;
 using System.Net.Sockets;
-using CS2M.Util;
 
 namespace CS2M.Networking
 {
@@ -16,7 +16,7 @@ namespace CS2M.Networking
                 using (Socket socket = new Socket(AddressFamily.InterNetwork, SocketType.Dgram, 0))
                 {
                     //Connect to some server to non-listening port
-                    socket.Connect(Mod.ModSettings.ApiServer, 65530);
+                    socket.Connect(Mod.Instance.Settings.ApiServer, 65530);
                     //Get the IP Address (Internal) from the IPEndPoint
                     return socket.LocalEndPoint is IPEndPoint endPoint ? endPoint.Address.ToString() : "";
                 }
@@ -33,7 +33,7 @@ namespace CS2M.Networking
             try
             {
                 //Get the External IP address from internet
-                return new CSMWebClient().DownloadString($"http://{Mod.ModSettings.ApiServer}/api/ip");
+                return new CSMWebClient().DownloadString($"http://{Mod.Instance.Settings.ApiServer}/api/ip");
             }
             catch (Exception e)
             {

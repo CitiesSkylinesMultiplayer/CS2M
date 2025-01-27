@@ -1,4 +1,3 @@
-using System.Collections.Generic;
 using Colossal.Serialization.Entities;
 using Colossal.UI.Binding;
 using CS2M.API.Networking;
@@ -7,6 +6,7 @@ using CS2M.Networking;
 using Game;
 using Game.UI;
 using Game.UI.InGame;
+using System.Collections.Generic;
 
 namespace CS2M.UI
 {
@@ -42,42 +42,43 @@ namespace CS2M.UI
         protected override void OnCreate()
         {
             base.OnCreate();
-            AddBinding(new TriggerBinding(nameof(CS2M), "ShowMultiplayerMenu", ShowJoinGameMenu));
-            AddBinding(new TriggerBinding(nameof(CS2M), "HideJoinGameMenu", HideJoinGameMenu));
-            AddBinding(new TriggerBinding(nameof(CS2M), "HideHostGameMenu", HideHostGameMenu));
 
-            AddBinding(new TriggerBinding<string>(nameof(CS2M), "SetJoinIpAddress", ip =>
+            AddBinding(new TriggerBinding(Mod.Name, "ShowMultiplayerMenu", ShowJoinGameMenu));
+            AddBinding(new TriggerBinding(Mod.Name, "HideJoinGameMenu", HideJoinGameMenu));
+            AddBinding(new TriggerBinding(Mod.Name, "HideHostGameMenu", HideHostGameMenu));
+
+            AddBinding(new TriggerBinding<string>(Mod.Name, "SetJoinIpAddress", ip =>
             {
                 _joinIPAddress.Update(ip);
             }));
-            AddBinding(new TriggerBinding<int>(nameof(CS2M), "SetJoinPort", port =>
+            AddBinding(new TriggerBinding<int>(Mod.Name, "SetJoinPort", port =>
             {
                 _joinPort.Update(port);
             }));
-            AddBinding(new TriggerBinding<int>(nameof(CS2M), "SetHostPort", port =>
+            AddBinding(new TriggerBinding<int>(Mod.Name, "SetHostPort", port =>
             {
                 _hostPort.Update(port);
             }));
-            AddBinding(new TriggerBinding<string>(nameof(CS2M), "SetUsername", username =>
+            AddBinding(new TriggerBinding<string>(Mod.Name, "SetUsername", username =>
             {
                 _username.Update(username);
             }));
 
-            AddBinding(new TriggerBinding(nameof(CS2M), "JoinGame", JoinGame));
-            AddBinding(new TriggerBinding(nameof(CS2M), "HostGame", HostGame));
+            AddBinding(new TriggerBinding(Mod.Name, "JoinGame", JoinGame));
+            AddBinding(new TriggerBinding(Mod.Name, "HostGame", HostGame));
 
-            AddBinding(_joinMenuVisible = new ValueBinding<bool>(nameof(CS2M), "JoinMenuVisible", false));
-            AddBinding(_hostMenuVisible = new ValueBinding<bool>(nameof(CS2M), "HostMenuVisible", false));
-            AddBinding(_modSupportStatus = new ValueBinding<List<ModSupportStatus>>(nameof(CS2M), "modSupport", new List<ModSupportStatus>(),new ListWriter<ModSupportStatus>(new ValueWriter<ModSupportStatus>())));
+            AddBinding(_joinMenuVisible = new ValueBinding<bool>(Mod.Name, "JoinMenuVisible", false));
+            AddBinding(_hostMenuVisible = new ValueBinding<bool>(Mod.Name, "HostMenuVisible", false));
+            AddBinding(_modSupportStatus = new ValueBinding<List<ModSupportStatus>>(Mod.Name, "modSupport", new List<ModSupportStatus>(), new ListWriter<ModSupportStatus>(new ValueWriter<ModSupportStatus>())));
 
-            AddBinding(_joinIPAddress = new ValueBinding<string>(nameof(CS2M), "JoinIpAddress", ""));
-            AddBinding(_joinPort = new ValueBinding<int>(nameof(CS2M), "JoinPort", 0));
-            AddBinding(_hostPort = new ValueBinding<int>(nameof(CS2M), "HostPort", 0));
-            AddBinding(_username = new ValueBinding<string>(nameof(CS2M), "Username", ""));
-            AddBinding(_joinGameEnabled = new ValueBinding<bool>(nameof(CS2M), "JoinGameEnabled", true));
-            AddBinding(_hostGameEnabled = new ValueBinding<bool>(nameof(CS2M), "HostGameEnabled", true));
+            AddBinding(_joinIPAddress = new ValueBinding<string>(Mod.Name, "JoinIpAddress", ""));
+            AddBinding(_joinPort = new ValueBinding<int>(Mod.Name, "JoinPort", 0));
+            AddBinding(_hostPort = new ValueBinding<int>(Mod.Name, "HostPort", 0));
+            AddBinding(_username = new ValueBinding<string>(Mod.Name, "Username", ""));
+            AddBinding(_joinGameEnabled = new ValueBinding<bool>(Mod.Name, "JoinGameEnabled", true));
+            AddBinding(_hostGameEnabled = new ValueBinding<bool>(Mod.Name, "HostGameEnabled", true));
 
-            AddBinding(_playerStatus = new ValueBinding<string>(nameof(CS2M), "PlayerStatus", ""));
+            AddBinding(_playerStatus = new ValueBinding<string>(Mod.Name, "PlayerStatus", ""));
         }
 
         private void RefreshModSupport()
