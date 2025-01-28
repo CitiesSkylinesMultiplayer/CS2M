@@ -80,9 +80,9 @@
           <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
         </PackageReference>
         <PackageReference Include="LiteNetLib" Version="1.3.1" />
-        <PackageReference Include="MessagePack" Version="3.1.1" />
+        <PackageReference Include="MessagePack" Version="3.1.2" />
         <PackageReference Include="MessagePack.Attributeless" Version="1.0.1" />
-        <PackageReference Include="MessagePack.UnityShims" Version="3.1.1" />
+        <PackageReference Include="MessagePack.UnityShims" Version="3.1.2" />
     </ItemGroup>
 
     <ItemGroup>
@@ -92,18 +92,21 @@
     </ItemGroup>
 
     <ItemGroup>
-        <PackAssemblies Include="$(OutputPath)\LiteNetLib.dll" />
-        <PackAssemblies Include="$(OutputPath)\MessagePack.dll" />
-        <PackAssemblies Include="$(OutputPath)\MessagePack.UnityShims.dll" />
-        <PackAssemblies Include="$(OutputPath)\MessagePack.Annotations.dll" />
-        <PackAssemblies Include="$(OutputPath)\MessagePack.Attributeless.dll" />
-        <PackAssemblies Include="$(OutputPath)\Microsoft.Bcl.AsyncInterfaces.dll" />
-        <PackAssemblies Include="$(OutputPath)\System.Threading.Tasks.Extensions.dll" />
-        <PackAssemblies Include="$(OutputPath)\System.Memory.dll" />
-        <PackAssemblies Include="$(OutputPath)\System.Runtime.CompilerServices.Unsafe.dll" />
-        <PackAssemblies Include="$(OutputPath)\System.Collections.Immutable.dll" />
-        <PackAssemblies Include="$(OutputPath)\System.Numerics.Vectors.dll" />
-        <PackAssemblies Include="$(OutputPath)\System.Buffers.dll" />
+		<PackAssemblies Include="$(OutputPath)\CS2M.API.dll" />
+		<PackAssemblies Include="$(OutputPath)\CS2M.BaseGame.dll" />
+		<PackAssemblies Include="$(OutputPath)\LiteNetLib.dll" />
+		<PackAssemblies Include="$(OutputPath)\MessagePack.Annotations.dll" />
+		<PackAssemblies Include="$(OutputPath)\MessagePack.Attributeless.dll" />
+		<PackAssemblies Include="$(OutputPath)\MessagePack.dll" />
+		<PackAssemblies Include="$(OutputPath)\MessagePack.UnityShims.dll" />
+		<PackAssemblies Include="$(OutputPath)\Microsoft.Bcl.AsyncInterfaces.dll" />
+		<PackAssemblies Include="$(OutputPath)\Microsoft.NET.StringTools.dll" />
+		<PackAssemblies Include="$(OutputPath)\System.Buffers.dll" />
+		<PackAssemblies Include="$(OutputPath)\System.Collections.Immutable.dll" />
+		<PackAssemblies Include="$(OutputPath)\System.Memory.dll" />
+		<PackAssemblies Include="$(OutputPath)\System.Numerics.Vectors.dll" />
+		<PackAssemblies Include="$(OutputPath)\System.Runtime.CompilerServices.Unsafe.dll" />
+		<PackAssemblies Include="$(OutputPath)\System.Threading.Tasks.Extensions.dll" />
     </ItemGroup>
 
     <Target Name="CopyEmits" AfterTargets="Build">
@@ -115,7 +118,6 @@
 
     <!-- ILRepack -->
     <Target Name="ILRepacker" AfterTargets="Build">
-
         <ItemGroup>
             <InputAssemblies Include="$(OutputPath)\CS2M.dll" />
             <InputAssemblies Include="@(PackAssemblies)" />
