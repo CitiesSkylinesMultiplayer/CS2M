@@ -3,7 +3,7 @@ using System.Net;
 
 namespace CS2M.Util
 {
-    class CSMWebClient : WebClient
+    internal class CSMWebClient : WebClient
     {
         private WebRequest _request = null;
 
