@@ -140,7 +140,8 @@ namespace CS2M.Networking
             {
                 Log.Trace("NetworkManager: Start NAT hole punch");
                 _netManager.NatPunchModule.SendNatIntroduceRequest(
-                    IPUtil.CreateIP4EndPoint(Mod.Instance.Settings.ApiServer, Mod.Instance.Settings.GetApiServerPort()), connect);
+                    IPUtil.CreateIP4EndPoint(Mod.Instance.Settings.ApiServer, Mod.Instance.Settings.GetApiServerPort()),
+                    connect);
                 _timeout.Start();
             }
             catch (Exception e)
@@ -187,7 +188,8 @@ namespace CS2M.Networking
             return true;
         }
 
-        private void ListenerOnNetworkReceiveEvent(NetPeer peer, NetPacketReader reader, byte channel, DeliveryMethod deliveryMethod)
+        private void ListenerOnNetworkReceiveEvent(NetPeer peer, NetPacketReader reader, byte channel,
+            DeliveryMethod deliveryMethod)
         {
             Log.Trace($"NetworkManager: OnNetworkReceiveEvent [PeerId: {peer.Id}]");
             // TODO: Process received data
@@ -255,6 +257,7 @@ namespace CS2M.Networking
             {
                 _netManager.NatPunchModule.PollEvents();
             }
+
             _netManager.PollEvents();
             // Trigger keepalive to api server
             _apiServer.KeepAlive(_connectionConfig);
