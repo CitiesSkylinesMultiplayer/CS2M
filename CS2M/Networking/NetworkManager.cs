@@ -188,8 +188,7 @@ namespace CS2M.Networking
             return true;
         }
 
-        private void ListenerOnNetworkReceiveEvent(NetPeer peer, NetPacketReader reader, byte channel,
-            DeliveryMethod deliveryMethod)
+        private void ListenerOnNetworkReceiveEvent(NetPeer peer, NetPacketReader reader, byte channel, DeliveryMethod deliveryMethod)
         {
             Log.Trace($"NetworkManager: OnNetworkReceiveEvent [PeerId: {peer.Id}]");
             // TODO: Process received data
