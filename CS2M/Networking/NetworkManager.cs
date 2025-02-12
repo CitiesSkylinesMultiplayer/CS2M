@@ -187,8 +187,7 @@ namespace CS2M.Networking
             return true;
         }
 
-        private void ListenerOnNetworkReceiveEvent(NetPeer peer, NetPacketReader reader, byte channel,
-            DeliveryMethod deliveryMethod)
+        private void ListenerOnNetworkReceiveEvent(NetPeer peer, NetPacketReader reader, byte channel, DeliveryMethod deliveryMethod)
         {
             Log.Trace($"NetworkManager: OnNetworkReceiveEvent [PeerId: {peer.Id}]");
             // TODO: Process received data
@@ -312,7 +311,7 @@ namespace CS2M.Networking
 
             // Update the console to let the user know the server is running
             Log.Info("The server has started.");
-            Chat.Instance.PrintGameMessage("Server started");
+            Chat.Instance.PrintGameMessage("CS2M.NetworkManager.ServerStarted".Translate());
 
             return true;
         }
