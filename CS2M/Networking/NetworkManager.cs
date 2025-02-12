@@ -1,4 +1,5 @@
-﻿using CS2M.API.Commands;
+﻿using CS2M.API;
+using CS2M.API.Commands;
 using CS2M.API.Networking;
 using CS2M.Commands;
 using CS2M.Commands.ApiServer;
@@ -311,6 +312,7 @@ namespace CS2M.Networking
 
             // Update the console to let the user know the server is running
             Log.Info("The server has started.");
+            Chat.Instance.PrintGameMessage("Server started");
 
             return true;
         }
