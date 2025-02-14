@@ -30,13 +30,16 @@ namespace CS2M.UI
 
         private GameMode _gameMode = GameMode.Other;
 
+        private ChatPanel ChatPanel { get; } = new ChatPanel();
+
         protected override void OnStartRunning()
         {
             base.OnStartRunning();
             _activeMenuScreenBinding = BindingsHelper.GetValueBinding<int>("menu", "activeScreen");
             _activeGameScreenBinding = BindingsHelper.GetValueBinding<int>("game", "activeScreen");
-            var panel = World.GetOrCreateSystemManaged<GamePanelUISystem>();
-            panel.SetDefaultArgs(new ChatPanel());
+
+            GamePanelUISystem gameChatPanel = World.GetOrCreateSystemManaged<GamePanelUISystem>();
+            gameChatPanel.SetDefaultArgs(ChatPanel);
         }
 
         protected override void OnCreate()
@@ -47,20 +50,16 @@ namespace CS2M.UI
             AddBinding(new TriggerBinding(Mod.Name, "HideJoinGameMenu", HideJoinGameMenu));
             AddBinding(new TriggerBinding(Mod.Name, "HideHostGameMenu", HideHostGameMenu));
 
-            AddBinding(new TriggerBinding<string>(Mod.Name, "SetJoinIpAddress", ip =>
-            {
+            AddBinding(new TriggerBinding<string>(Mod.Name, "SetJoinIpAddress", ip => {
                 _joinIPAddress.Update(ip);
             }));
-            AddBinding(new TriggerBinding<int>(Mod.Name, "SetJoinPort", port =>
-            {
+            AddBinding(new TriggerBinding<int>(Mod.Name, "SetJoinPort", port => {
                 _joinPort.Update(port);
             }));
-            AddBinding(new TriggerBinding<int>(Mod.Name, "SetHostPort", port =>
-            {
+            AddBinding(new TriggerBinding<int>(Mod.Name, "SetHostPort", port => {
                 _hostPort.Update(port);
             }));
-            AddBinding(new TriggerBinding<string>(Mod.Name, "SetUsername", username =>
-            {
+            AddBinding(new TriggerBinding<string>(Mod.Name, "SetUsername", username => {
                 _username.Update(username);
             }));
 
@@ -79,6 +78,8 @@ namespace CS2M.UI
             AddBinding(_hostGameEnabled = new ValueBinding<bool>(Mod.Name, "HostGameEnabled", true));
 
             AddBinding(_playerStatus = new ValueBinding<string>(Mod.Name, "PlayerStatus", ""));
+
+            RegisterChatPanelBindings();
         }
 
         private void RefreshModSupport()
@@ -89,13 +90,11 @@ namespace CS2M.UI
         private void ShowJoinGameMenu()
         {
             RefreshModSupport();
-            if (_gameMode == GameMode.MainMenu)
-            {
+            if (_gameMode == GameMode.MainMenu) {
                 this._activeMenuScreenBinding.Update(99);
                 this._joinMenuVisible.Update(true);
             }
-            else if (_gameMode == GameMode.Game)
-            {
+            else if (_gameMode == GameMode.Game) {
                 this._activeGameScreenBinding.Update(99);
                 this._joinMenuVisible.Update(true);
             }
@@ -104,13 +103,11 @@ namespace CS2M.UI
         private void ShowHostGameMenu()
         {
             RefreshModSupport();
-            if (_gameMode == GameMode.MainMenu)
-            {
+            if (_gameMode == GameMode.MainMenu) {
                 this._activeMenuScreenBinding.Update(99);
                 this._hostMenuVisible.Update(true);
             }
-            else if (_gameMode == GameMode.Game)
-            {
+            else if (_gameMode == GameMode.Game) {
                 this._activeGameScreenBinding.Update(99);
                 this._hostMenuVisible.Update(true);
             }
@@ -151,6 +148,13 @@ namespace CS2M.UI
         {
             base.OnGameLoadingComplete(purpose, mode);
             _gameMode = mode;
+        }
+
+        private void RegisterChatPanelBindings()
+        {
+            AddBinding(ChatPanel.LocalChatMessage);
+            AddBinding(ChatPanel.SetLocalChatMessage);
+            AddBinding(ChatPanel.ReceivedChatMessage);
         }
     }
 }
