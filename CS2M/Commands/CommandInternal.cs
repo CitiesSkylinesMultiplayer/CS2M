@@ -153,7 +153,7 @@ namespace CS2M.Commands
                     bool added = _cmdMapping.TryAdd(handler.GetDataType(), handler);
                     if (!added)
                     {
-                        Log.Warn($"Handler for {handler.GetDataType()} already exists");
+                        Log.Debug($"Handler for {handler.GetDataType()} already exists");
                     }
 
                     // Add subtype to the MsgPack model with all attributes
