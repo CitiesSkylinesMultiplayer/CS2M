@@ -10,7 +10,6 @@ using System.Collections.Generic;
 
 namespace CS2M.UI
 {
-
     public partial class UISystem : UISystemBase
     {
         private ValueBinding<int> _activeMenuScreenBinding;
@@ -51,29 +50,19 @@ namespace CS2M.UI
             AddBinding(new TriggerBinding(Mod.Name, "HideJoinGameMenu", HideJoinGameMenu));
             AddBinding(new TriggerBinding(Mod.Name, "HideHostGameMenu", HideHostGameMenu));
 
-            AddBinding(new TriggerBinding<string>(Mod.Name, "SetJoinIpAddress", ip =>
-            {
-                _joinIPAddress.Update(ip);
-            }));
-            AddBinding(new TriggerBinding<int>(Mod.Name, "SetJoinPort", port =>
-            {
-                _joinPort.Update(port);
-            }));
-            AddBinding(new TriggerBinding<int>(Mod.Name, "SetHostPort", port =>
-            {
-                _hostPort.Update(port);
-            }));
-            AddBinding(new TriggerBinding<string>(Mod.Name, "SetUsername", username =>
-            {
-                _username.Update(username);
-            }));
+            AddBinding(new TriggerBinding<string>(Mod.Name, "SetJoinIpAddress", ip => { _joinIPAddress.Update(ip); }));
+            AddBinding(new TriggerBinding<int>(Mod.Name, "SetJoinPort", port => { _joinPort.Update(port); }));
+            AddBinding(new TriggerBinding<int>(Mod.Name, "SetHostPort", port => { _hostPort.Update(port); }));
+            AddBinding(new TriggerBinding<string>(Mod.Name, "SetUsername",
+                username => { _username.Update(username); }));
 
             AddBinding(new TriggerBinding(Mod.Name, "JoinGame", JoinGame));
             AddBinding(new TriggerBinding(Mod.Name, "HostGame", HostGame));
 
             AddBinding(_joinMenuVisible = new ValueBinding<bool>(Mod.Name, "JoinMenuVisible", false));
             AddBinding(_hostMenuVisible = new ValueBinding<bool>(Mod.Name, "HostMenuVisible", false));
-            AddBinding(_modSupportStatus = new ValueBinding<List<ModSupportStatus>>(Mod.Name, "modSupport", new List<ModSupportStatus>(), new ListWriter<ModSupportStatus>(new ValueWriter<ModSupportStatus>())));
+            AddBinding(_modSupportStatus = new ValueBinding<List<ModSupportStatus>>(Mod.Name, "modSupport",
+                new List<ModSupportStatus>(), new ListWriter<ModSupportStatus>(new ValueWriter<ModSupportStatus>())));
 
             AddBinding(_joinIPAddress = new ValueBinding<string>(Mod.Name, "JoinIpAddress", ""));
             AddBinding(_joinPort = new ValueBinding<int>(Mod.Name, "JoinPort", 0));
@@ -95,11 +84,13 @@ namespace CS2M.UI
         private void ShowJoinGameMenu()
         {
             RefreshModSupport();
-            if (_gameMode == GameMode.MainMenu) {
+            if (_gameMode == GameMode.MainMenu)
+            {
                 this._activeMenuScreenBinding.Update(99);
                 this._joinMenuVisible.Update(true);
             }
-            else if (_gameMode == GameMode.Game) {
+            else if (_gameMode == GameMode.Game)
+            {
                 this._activeGameScreenBinding.Update(99);
                 this._joinMenuVisible.Update(true);
             }
@@ -108,11 +99,13 @@ namespace CS2M.UI
         private void ShowHostGameMenu()
         {
             RefreshModSupport();
-            if (_gameMode == GameMode.MainMenu) {
+            if (_gameMode == GameMode.MainMenu)
+            {
                 this._activeMenuScreenBinding.Update(99);
                 this._hostMenuVisible.Update(true);
             }
-            else if (_gameMode == GameMode.Game) {
+            else if (_gameMode == GameMode.Game)
+            {
                 this._activeGameScreenBinding.Update(99);
                 this._hostMenuVisible.Update(true);
             }
