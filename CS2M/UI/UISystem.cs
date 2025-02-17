@@ -40,6 +40,7 @@ namespace CS2M.UI
 
             GamePanelUISystem gameChatPanel = World.GetOrCreateSystemManaged<GamePanelUISystem>();
             gameChatPanel.SetDefaultArgs(ChatPanel);
+            ChatPanel.WelcomeChatMessage();
         }
 
         protected override void OnCreate()
@@ -152,9 +153,9 @@ namespace CS2M.UI
 
         private void RegisterChatPanelBindings()
         {
+            AddBinding(ChatPanel.ChatMessages);
             AddBinding(ChatPanel.LocalChatMessage);
             AddBinding(ChatPanel.SetLocalChatMessage);
-            AddBinding(ChatPanel.ReceivedChatMessage);
         }
     }
 }

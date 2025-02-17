@@ -2,6 +2,8 @@ using Colossal.UI.Binding;
 using CS2M.API;
 using CS2M.Networking;
 using Game.UI.InGame;
+using System;
+using System.Collections.Generic;
 
 namespace CS2M.UI
 {
@@ -15,13 +17,13 @@ namespace CS2M.UI
         public class Message
         {
             public string User { get; set; } = string.Empty;
+            public DateTime Timestamp { get; set; } = DateTime.Now;
             public string Text { get; set; } = string.Empty;
         }
 
-        public ValueBinding<string[]> ChatMessages { get; }
+        public ValueBinding<List<string>> ChatMessages { get; }
         public ValueBinding<string> LocalChatMessage { get; }
         public TriggerBinding<string> SetLocalChatMessage { get; }
-        public EventBinding<string> ReceivedChatMessage { get; }
 
         public override LayoutPosition position => LayoutPosition.Right;
 
@@ -29,20 +31,18 @@ namespace CS2M.UI
         {
             Chat.Instance = this;
 
-            ChatMessages = new ValueBinding<string[]>(Mod.Name, nameof(ChatMessages), new string[] { });
+            ChatMessages = new ValueBinding<List<string>>(Mod.Name, nameof(ChatMessages), new List<string>(), new ListWriter<string>(new StringWriter()));
             LocalChatMessage = new ValueBinding<string>(Mod.Name, nameof(LocalChatMessage), string.Empty);
             SetLocalChatMessage = new TriggerBinding<string>(Mod.Name, nameof(SetLocalChatMessage), message => {
                 LocalChatMessage.Update(message);
             });
-            ReceivedChatMessage = new EventBinding<string>(Mod.Name, nameof(ReceivedChatMessage));
-
-            WelcomeChatMessage();
         }
 
         private void PrintMessage(string sender, string msg)
         {
             Log.Debug($"ChatPanel_PrintMessage: {sender} - {msg}");
-            ReceivedChatMessage.Trigger(msg);
+            ChatMessages.value.Add(msg);
+            ChatMessages.TriggerUpdate();
         }
 
         /// <summary>
