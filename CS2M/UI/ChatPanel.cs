@@ -1,5 +1,7 @@
 using Colossal.UI.Binding;
 using CS2M.API;
+using CS2M.API.Commands.Data.Internal;
+using CS2M.Commands;
 using CS2M.Networking;
 using Game.UI.InGame;
 using System;
@@ -14,15 +16,36 @@ namespace CS2M.UI
     /// </summary>
     public class ChatPanel : EntityGamePanel, IChat
     {
-        public class Message
+        public readonly struct Message : IJsonWritable
         {
-            public string User { get; set; } = string.Empty;
-            public DateTime Timestamp { get; set; } = DateTime.Now;
-            public string Text { get; set; } = string.Empty;
+            public string Timestamp { get; }
+            public string User { get; }
+            public string Text { get; }
+
+            public Message(string timestamp, string user, string text)
+            {
+                Timestamp = timestamp;
+                User = user;
+                Text = text;
+            }
+
+            public void Write(IJsonWriter writer)
+            {
+                writer.TypeBegin(this.GetType().FullName);
+                writer.PropertyName("timestamp");
+                writer.Write(this.Timestamp);
+                writer.PropertyName("user");
+                writer.Write(this.User);
+                writer.PropertyName("text");
+                writer.Write(this.Text);
+                writer.TypeEnd();
+            }
         }
 
-        public ValueBinding<List<string>> ChatMessages { get; }
+        public ValueBinding<List<Message>> ChatMessages { get; }
+        public ValueBinding<string> CurrentUsername { get; }
         public ValueBinding<string> LocalChatMessage { get; }
+        public TriggerBinding SendChatMessage { get; }
         public TriggerBinding<string> SetLocalChatMessage { get; }
 
         public override LayoutPosition position => LayoutPosition.Right;
@@ -31,8 +54,19 @@ namespace CS2M.UI
         {
             Chat.Instance = this;
 
-            ChatMessages = new ValueBinding<List<string>>(Mod.Name, nameof(ChatMessages), new List<string>(), new ListWriter<string>(new StringWriter()));
+            ChatMessages = new ValueBinding<List<Message>>(Mod.Name, nameof(ChatMessages), new List<Message>(), new ListWriter<Message>(new ValueWriter<Message>()));
+            CurrentUsername = new ValueBinding<string>(Mod.Name, nameof(CurrentUsername), GetCurrentUsername());
             LocalChatMessage = new ValueBinding<string>(Mod.Name, nameof(LocalChatMessage), string.Empty);
+            SendChatMessage = new TriggerBinding(Mod.Name, nameof(SendChatMessage), () => {
+                ChatMessageCommand message = new ChatMessageCommand() {
+                    Username = GetCurrentUsername(),
+                    Message = LocalChatMessage.value
+                };
+                CommandInternal.Instance.SendToAll(message);
+
+                CurrentUsername.Update(GetCurrentUsername());
+                LocalChatMessage.Update(string.Empty);
+            });
             SetLocalChatMessage = new TriggerBinding<string>(Mod.Name, nameof(SetLocalChatMessage), message => {
                 LocalChatMessage.Update(message);
             });
@@ -41,25 +75,15 @@ namespace CS2M.UI
         private void PrintMessage(string sender, string msg)
         {
             Log.Debug($"ChatPanel_PrintMessage: {sender} - {msg}");
-            ChatMessages.value.Add(msg);
+            ChatMessages.value.Add(new Message(DateTime.Now.ToShortTimeString(), sender, msg));
             ChatMessages.TriggerUpdate();
-        }
-
-        /// <summary>
-        /// Prints a game message to the ChatPanel with MessageType.NORMAL.
-        /// </summary>
-        /// <param name="msg">The message.</param>
-        public void PrintGameMessage(string msg)
-        {
-            PrintGameMessage(Chat.MessageType.Normal, msg);
         }
 
         /// <summary>
         /// Prints a game message to the ChatPanel
         /// </summary>
-        /// <param name="type">The message type.</param>
         /// <param name="msg">The message.</param>
-        public void PrintGameMessage(Chat.MessageType type, string msg)
+        public void PrintGameMessage(string msg)
         {
             PrintMessage(Mod.Name, msg);
         }
@@ -80,7 +104,7 @@ namespace CS2M.UI
         /// <returns>The username of the current player</returns>
         public string GetCurrentUsername()
         {
-            return NetworkInterface.Instance.LocalPlayer.Username;
+            return NetworkInterface.Instance.LocalPlayer.Username ?? string.Empty;
         }
 
         public void WelcomeChatMessage()

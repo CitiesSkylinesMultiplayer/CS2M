@@ -154,7 +154,9 @@ namespace CS2M.UI
         private void RegisterChatPanelBindings()
         {
             AddBinding(ChatPanel.ChatMessages);
+            AddBinding(ChatPanel.CurrentUsername);
             AddBinding(ChatPanel.LocalChatMessage);
+            AddBinding(ChatPanel.SendChatMessage);
             AddBinding(ChatPanel.SetLocalChatMessage);
         }
     }

@@ -26,5 +26,6 @@
   "CS2M.UI.HostGame": "Host game",
   "CS2M.UI.ChatPanel.Header": "Chat",
   "CS2M.UI.ChatPanel.ChatMessageInput": "Enter message...",
+  "CS2M.UI.ChatPanel.SendMessage": "Send",
   "CS2M.NetworkManager.ServerStarted": "Server started"
 }
