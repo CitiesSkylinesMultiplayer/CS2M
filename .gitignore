@@ -10,4 +10,5 @@ assemblies/*.dll
 
 CS2M/Library
 *.sln.DotSettings.user
+*csproj.user
 *.drawio.bkp
