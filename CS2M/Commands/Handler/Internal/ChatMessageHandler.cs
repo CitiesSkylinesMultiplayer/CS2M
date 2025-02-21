@@ -1,6 +1,8 @@
-﻿using CS2M.API.Commands.Data.Internal;
+﻿using CS2M.API;
+using CS2M.API.Commands;
+using CS2M.Commands.Data.Internal;
 
-namespace CS2M.API.Commands.Handler.Internal
+namespace CS2M.Commands.Handler.Internal
 {
     public class ChatMessageHandler : CommandHandler<ChatMessageCommand>
     {

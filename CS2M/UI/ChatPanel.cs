@@ -1,7 +1,7 @@
 using Colossal.UI.Binding;
 using CS2M.API;
-using CS2M.API.Commands.Data.Internal;
 using CS2M.Commands;
+using CS2M.Commands.Data.Internal;
 using CS2M.Networking;
 using Game.UI.InGame;
 using System;

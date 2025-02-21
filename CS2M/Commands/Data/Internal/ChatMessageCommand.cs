@@ -1,4 +1,6 @@
-﻿namespace CS2M.API.Commands.Data.Internal
+﻿using CS2M.API.Commands;
+
+namespace CS2M.Commands.Data.Internal
 {
     /// <summary>
     /// Send chat messages to other players in game.
