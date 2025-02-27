@@ -57,19 +57,36 @@ namespace CS2M.UI
             ChatMessages = new ValueBinding<List<Message>>(Mod.Name, nameof(ChatMessages), new List<Message>(), new ListWriter<Message>(new ValueWriter<Message>()));
             CurrentUsername = new ValueBinding<string>(Mod.Name, nameof(CurrentUsername), GetCurrentUsername());
             LocalChatMessage = new ValueBinding<string>(Mod.Name, nameof(LocalChatMessage), string.Empty);
-            SendChatMessage = new TriggerBinding(Mod.Name, nameof(SendChatMessage), () => {
-                ChatMessageCommand message = new ChatMessageCommand() {
-                    Username = GetCurrentUsername(),
-                    Message = LocalChatMessage.value
-                };
-                CommandInternal.Instance.SendToAll(message);
+            SendChatMessage = new TriggerBinding(Mod.Name, nameof(SendChatMessage), () => SendMessage());
+            SetLocalChatMessage = new TriggerBinding<string>(Mod.Name, nameof(SetLocalChatMessage), message => UpdateChatMessage(message));
+        }
 
-                CurrentUsername.Update(GetCurrentUsername());
-                LocalChatMessage.Update(string.Empty);
-            });
-            SetLocalChatMessage = new TriggerBinding<string>(Mod.Name, nameof(SetLocalChatMessage), message => {
+        private void UpdateChatMessage(string message)
+        {
+            if (message.EndsWith("\n")) {
+                // User has pressed 'Enter' so we send the message they have input.
+                SendMessage();
+            }
+            else {
                 LocalChatMessage.Update(message);
-            });
+            }
+        }
+
+        private void SendMessage()
+        {
+            // TODO add a check to see if user is connected to a server.
+            string username = GetCurrentUsername();
+            if (string.IsNullOrEmpty(username)) {
+                return;
+            }
+
+            ChatMessageCommand message = new ChatMessageCommand() {
+                Username = GetCurrentUsername(),
+                Message = LocalChatMessage.value
+            };
+            CommandInternal.Instance.SendToAll(message);
+
+            LocalChatMessage.Update(string.Empty);
         }
 
         private void PrintMessage(string sender, string msg)

@@ -3,7 +3,7 @@ import { getModule } from "cs2/modding";
 import { Button, Panel, PanelSection, Scrollable } from "cs2/ui";
 import { useLocalization } from "cs2/l10n";
 import { setVal } from "api";
-import styles from "../cs2m.module.scss";
+import styles from "./chat.module.scss";
 import mod from "../../mod.json";
 
 interface Message {
@@ -34,7 +34,7 @@ export const ChatPanel = (e: any) => {
     const localChatMessage = useValue(localChatMessageBinding);
 
     return (
-        <SocialPanelLayout>
+        <SocialPanelLayout className={styles.socialPanelLayoutContent}>
             <Panel theme={LightOpaqueTheme}
                 header={translate("CS2M.UI.ChatPanel.Header")}
                 transitionSounds={TransitionSounds}
@@ -43,15 +43,26 @@ export const ChatPanel = (e: any) => {
                 onClose={e.onClose}>
                 <Scrollable autoScroll={true} smooth={true} >
                     {chatMessages?.map(message => (
-                        <div className={`${message.user === currentUsername ? "styles.chatBubble.right" : "styles.chatBubble"}`}>
-                            <p className={styles.username}>{message.user}</p>
-                            <p className={styles.userMessage}>{message.timestamp}: {message.text}</p>
+                        <div className={`${message.user === currentUsername ? "styles.chatBubble-right" : "styles.chatBubble"}`}>
+                            <div className={styles.content}>
+                                <div className={styles.header}>
+                                    <button className={styles.username}>{message.user}</button>
+                                    <div className={styles.timestamp}>{message.timestamp}</div>
+                                </div>
+
+                                <div className={styles.message}>
+                                    <p cohinline="cohinline">
+                                        {message.text}
+                                    </p>
+                                </div>
+                            </div>
                         </div>
                     ))}
                 </Scrollable>
 
                 <PanelSection>
                     <StringInputField
+                        className={styles.messageInput}
                         value={localChatMessage}
                         placeholder={translate("CS2M.UI.ChatPanel.ChatMessageInput")}
                         onChange={(val: any) => { setVal("SetLocalChatMessage", val) }} />
@@ -60,7 +71,7 @@ export const ChatPanel = (e: any) => {
                     </Button>
                 </PanelSection>
             </Panel>
-        </SocialPanelLayout>
+        </SocialPanelLayout >
     );
 };
 
