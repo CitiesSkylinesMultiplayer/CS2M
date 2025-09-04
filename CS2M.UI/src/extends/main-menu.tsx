@@ -40,7 +40,7 @@ export const PauseMenuCSMExtend : ModuleRegistryExtend = (Component) => {
         if (props.src == 'Media/Glyphs/ArrowRight.svg') {
             return (
                 <>
-                    <MenuButton onClick={showMultiplayerMenu}>Multiplayer</MenuButton>
+                    <MenuButton onClick={showMultiplayerMenu}>Multiplayer [CS2M]</MenuButton>
                     <Component {...otherProps}>
                         {children}
                     </Component>

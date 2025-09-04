@@ -14,7 +14,7 @@ export const InputField = (props : any) => {
         <FocusableEditorItem disabled={props.disabled}>
             <div className={EditorCSS.row}>
                 <div className={EditorCSS.label}>
-                    {translate(props.label)}
+                    {translate(props.label, props.label)}
                 </div>
                 <div className={EditorCSS.control}>
                     <StringInputField className={props.error ? EditorCSS.errorBorder : null} value={props.value} onChange={props.onChange} maxLength={props.maxLength ?? 85}>

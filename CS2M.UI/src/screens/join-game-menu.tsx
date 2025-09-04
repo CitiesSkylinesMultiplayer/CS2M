@@ -12,6 +12,9 @@ export const ipAddress = bindValue<string>(mod.id, 'JoinIpAddress');
 export const port = bindValue<number>(mod.id, 'JoinPort');
 export const username = bindValue<string>(mod.id, 'Username');
 export const joinGameEnabled = bindValue<boolean>(mod.id, 'JoinGameEnabled');
+export const hostGameEnabled = bindValue<boolean>(mod.id, 'HostGameEnabled');
+
+export const listNetworkStates = bindValue<string>(mod.id, 'uiNetworkStates');
 
 export function hideJoinGame() {
     trigger(mod.id, "HideJoinGameMenu");
@@ -41,6 +44,8 @@ export const JoinGameSettings = () => {
     let usernameValue = useValue(username);
     let enabled = useValue(joinGameEnabled);
 
+    let outNetworkStates = useValue(listNetworkStates);
+
     const { translate } = useLocalization();
 
     const focusChange = () => {};
@@ -57,8 +62,8 @@ export const JoinGameSettings = () => {
                                     onChange={(val: any) => {setVal("SetUsername", val)}}></InputField>
                     </NavigationScope>
                 </div>
-                <div className={GameOptionsCSS.infoColumn}>
-
+                <div className={GameOptionsCSS.infoColumn} style={{whiteSpace:"pre-wrap"}}>
+                    {outNetworkStates}
                 </div>
             </div>
         </FocusBoundary>
@@ -79,6 +84,7 @@ export const JoinGameMenu = () => {
     const visible : boolean = useValue(joinMenuVisible);
     const modSupports  = useValue(modSupport);
     const enabled = useValue(joinGameEnabled);
+    const enabled2 = useValue(hostGameEnabled);
 
     const { translate } = useLocalization();
 
@@ -87,11 +93,11 @@ export const JoinGameMenu = () => {
     let details = [];
     let detailsTitle;
     if (enabled) {
-        detailsTitle = translate("CS2M.UI.Compatibility");
+        detailsTitle = translate("CS2M.UI.Compatibility", "Compatibility");
         for (let support of modSupports) {
             let support_str = translate("CS2M.UI.Compatibility[" + support.support + "]", support.support);
             if (support.client_side) {
-                support_str = translate("CS2M.UI.ClientSide");
+                support_str = translate("CS2M.UI.ClientSide", "Client Side");
             }
             let color;
             switch (support.support) {
@@ -111,24 +117,24 @@ export const JoinGameMenu = () => {
             details.push(<div style={{color: color}}><Field label={support.name}>{support_str}</Field></div>);
         }
     } else {
-        detailsTitle = translate("CS2M.UI.JoiningGame");
+        detailsTitle = translate("CS2M.UI.JoiningGame", "Joining Game");
     }
 
     let footer = <>
-        <FooterButton disabled={!enabled} onSelect={hostGame}>{translate("CS2M.UI.HostGame")}</FooterButton>
-        <FooterButton disabled={!enabled} onSelect={joinGame}>{translate("CS2M.UI.JoinGame")}</FooterButton>
+        <FooterButton disabled={!enabled2} onSelect={hostGame}>{translate("CS2M.UI.HostChat", "Host Chat")}</FooterButton>
+        <FooterButton disabled={!enabled} onSelect={joinGame}>{translate("CS2M.UI.JoinGame", "Join Game")}</FooterButton>
         </>;
 
     let content;
     if (visible) {
         content = (
-            <SubScreen title={translate("CS2M.UI.Multiplayer")} onClose={hideJoinGame}>
+            <SubScreen title={translate("CS2M.UI.Multiplayer", "Multiplayer")} onClose={hideJoinGame}>
                 <InputActionConsumer actions={actions}>
                     <div className={LoadGameScreenCSS.content}>
                         <AutoNavigationScope>
                             <div className={LoadGameScreenCSS.stepContainer}>
                                 <div className={SaveListCSS.saveList + " " + LoadGameScreenCSS.step}>
-                                    <div className={DetailSectionCSS.title}>{translate("CS2M.UI.JoinGame")}</div>
+                                    <div className={DetailSectionCSS.title}>{translate("CS2M.UI.JoinGame", "Join_Game")}</div>
                                     <JoinGameSettings></JoinGameSettings>
                                 </div>
                             </div>

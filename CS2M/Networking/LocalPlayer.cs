@@ -2,6 +2,7 @@
 using CS2M.API.Networking;
 using CS2M.Commands.ApiServer;
 using LiteNetLib;
+using System;
 
 namespace CS2M.Networking
 {
@@ -13,7 +14,7 @@ namespace CS2M.Networking
         {
         }
 
-        public bool GetServerInfo(ConnectionConfig connectionConfig)
+        public bool GetServerInfo(ConnectionConfig connectionConfig, Action<string> onStart)
         {
             if (PlayerStatus != PlayerStatus.INACTIVE)
             {
@@ -31,16 +32,19 @@ namespace CS2M.Networking
 
             if (!_networkManager.InitConnect(connectionConfig))
             {
+                onStart?.Invoke("= Can't init connect to server =");
                 return false;
             }
 
             if (!_networkManager.SetupNatConnect())
             {
+                onStart?.Invoke("= Can't perform NAT connection to server ");
                 return false;
             }
 
             PlayerType = PlayerType.CLIENT;
             PlayerStatus = PlayerStatus.GET_SERVER_INFO;
+            onStart?.Invoke("= Connection to server is succsesful! =");
             return true;
         }
 
@@ -95,7 +99,7 @@ namespace CS2M.Networking
         }
 
         // INACTIVE -> PLAYING (Server)
-        public bool Playing(ConnectionConfig connectionConfig)
+        public bool Playing(ConnectionConfig connectionConfig, Action<string> onStart)
         {
             if (PlayerStatus != PlayerStatus.INACTIVE)
             {
@@ -107,12 +111,15 @@ namespace CS2M.Networking
             bool serverStarted = _networkManager.StartServer(connectionConfig);
             if (!serverStarted)
             {
+                onStart?.Invoke("= Error! The server failed to start. =");
                 return false;
             }
-            
-            //TODO: Setup server variables (player list, etc.)
 
+            //TODO: Setup server variables (player list, etc.)
+            PlayerType = PlayerType.SERVER;
             PlayerStatus = PlayerStatus.PLAYING;
+
+            onStart?.Invoke("= The server has started succesfully. =");
             
             return true;
         }

@@ -48,7 +48,7 @@ export const HostGameSettings = () => {
                     </NavigationScope>
                 </div>
                 <div className={GameOptionsCSS.infoColumn}>
-
+                    Some info from server
                 </div>
             </div>
         </FocusBoundary>
@@ -78,11 +78,11 @@ export const HostGameMenu = () => {
     let details = [];
     let detailsTitle;
     if (enabled) {
-        detailsTitle = translate("CS2M.UI.Compatibility");
+        detailsTitle = translate("CS2M.UI.Compatibility", "Compatibility");
         for (let support of modSupports) {
             let support_str = translate("CS2M.UI.Compatibility[" + support.support + "]", support.support);
             if (support.client_side) {
-                support_str = translate("CS2M.UI.ClientSide");
+                support_str = translate("CS2M.UI.ClientSide", "Client Side");
             }
             let color;
             switch (support.support) {
@@ -102,21 +102,21 @@ export const HostGameMenu = () => {
             details.push(<div style={{color: color}}><Field label={support.name}>{support_str}</Field></div>);
         }
     } else {
-        detailsTitle = status ?? translate("CS2M.UI.StartingServer");
+        detailsTitle = status ?? translate("CS2M.UI.StartingServer", "StartingServer");
     }
 
-    let footer = <FooterButton disabled={!enabled} onSelect={hostGame}>{translate("CS2M.UI.StartServer")}</FooterButton>;
+    let footer = <FooterButton disabled={!enabled} onSelect={hostGame}>{translate("CS2M.UI.StartServer", "Start Server")}</FooterButton>;
 
     let content;
     if (visible) {
         content = (
-            <SubScreen title={translate("CS2M.UI.Multiplayer")} onClose={hideHostGame}>
+            <SubScreen title={translate("CS2M.UI.Multiplayer", "Multiplayer")} onClose={hideHostGame}>
                 <InputActionConsumer actions={actions}>
                     <div className={LoadGameScreenCSS.content}>
                         <AutoNavigationScope>
                             <div className={LoadGameScreenCSS.stepContainer}>
                                 <div className={SaveListCSS.saveList + " " + LoadGameScreenCSS.step}>
-                                    <div className={DetailSectionCSS.title}>{translate("CS2M.UI.HostGame")}</div>
+                                    <div className={DetailSectionCSS.title}>{translate("CS2M.UI.HostGame", "Host Game")}</div>
                                     <HostGameSettings></HostGameSettings>
                                 </div>
                             </div>

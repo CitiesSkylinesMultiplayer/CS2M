@@ -1,12 +1,14 @@
-﻿using System;
-using System.Net;
-using System.Net.Sockets;
+﻿using Colossal.UI.Binding;
 using CS2M.API.Commands;
 using CS2M.API.Networking;
 using CS2M.Commands;
 using CS2M.Commands.ApiServer;
+using CS2M.UI;
 using CS2M.Util;
 using LiteNetLib;
+using System;
+using System.Net;
+using System.Net.Sockets;
 using Timer = System.Timers.Timer;
 
 namespace CS2M.Networking
@@ -46,10 +48,13 @@ namespace CS2M.Networking
             listener.PeerDisconnectedEvent += ListenerOnPeerDisconnectedEvent;
             listener.NetworkLatencyUpdateEvent += ListenerOnNetworkLatencyUpdateEvent;
             listener.ConnectionRequestEvent += ListenerOnConnectionRequestEvent;
+
+
         }
 
         public bool InitConnect(ConnectionConfig connectionConfig)
         {
+
             if (connectionConfig.IsTokenBased())
             {
                 Log.Info($"Attempting to connect to server {connectionConfig.Token}...");
@@ -69,6 +74,10 @@ namespace CS2M.Networking
                 //ConnectionMessage = "Client failed to start.";
                 return false;
             }
+            else
+            {
+                Log.Info("The client conected to server succesfuly!");
+            }
 
             return true;
         }
@@ -86,6 +95,7 @@ namespace CS2M.Networking
                 catch
                 {
                     //ConnectionMessage = "Invalid server IP";
+                    Log.Error("Invalid server IP");
                     return false;
                 }
             }
@@ -238,8 +248,9 @@ namespace CS2M.Networking
                 _netManager.NatPunchModule.PollEvents();
             }
             _netManager.PollEvents();
+
             // Trigger keepalive to api server
-            _apiServer.KeepAlive(_connectionConfig);
+            // _apiServer.KeepAlive(_connectionConfig);
         }
 
         public void SendToAllClients(CommandBase message)

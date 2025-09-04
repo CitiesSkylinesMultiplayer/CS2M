@@ -1,6 +1,7 @@
 ﻿using CS2M.API.Commands;
 using CS2M.API.Networking;
 using CS2M.Commands.ApiServer;
+using System;
 
 namespace CS2M.Networking
 {
@@ -17,14 +18,14 @@ namespace CS2M.Networking
             LocalPlayer.OnUpdate();
         }
 
-        public void Connect(ConnectionConfig connectionConfig)
+        public void Connect(ConnectionConfig connectionConfig, Action<string> onStart)
         {
-            LocalPlayer.GetServerInfo(connectionConfig);
+            LocalPlayer.GetServerInfo(connectionConfig, onStart);
         }
 
-        public void StartServer(ConnectionConfig connectionConfig)
+        public void StartServer(ConnectionConfig connectionConfig, Action<string> onStart)
         {
-            LocalPlayer.Playing(connectionConfig);
+            LocalPlayer.Playing(connectionConfig, onStart);
         }
 
         public void SendToAll(CommandBase message)
