@@ -24,5 +24,6 @@
   "CS2M.UI.JoinGame": "Присоединится к игре",
   "CS2M.UI.StartServer": "Запустить сервер",
   "CS2M.UI.HostGame": "Захостить сервер",
-  "CS2M.UI.HostChat": "Запустить Чат-сервер"
+  "CS2M.UI.HostChat": "Запустить Чат-сервер",
+  "CS2M.UI.SendMessage": "Отправить сообщение"
 }

@@ -1,9 +1,9 @@
-import {getModule} from "cs2/modding";
-import {bindValue, trigger, useValue} from "cs2/api";
+import { getModule } from "cs2/modding";
+import { bindValue, trigger, useValue } from "cs2/api";
 import mod from "../../mod.json";
-import {FocusBoundary, NavigationScope} from "cs2/input";
-import {useLocalization} from "cs2/l10n";
-import {InputField} from "../util/input-field";
+import { FocusBoundary, NavigationScope } from "cs2/input";
+import { useLocalization } from "cs2/l10n";
+import { InputField,InputFieldWide } from "../util/input-field";
 
 export const joinMenuVisible = bindValue<boolean>(mod.id, 'JoinMenuVisible');
 export const modSupport = bindValue<Array<any>>(mod.id, 'modSupport');
@@ -15,6 +15,7 @@ export const joinGameEnabled = bindValue<boolean>(mod.id, 'JoinGameEnabled');
 export const hostGameEnabled = bindValue<boolean>(mod.id, 'HostGameEnabled');
 
 export const listNetworkStates = bindValue<string>(mod.id, 'uiNetworkStates');
+export const playerMessage = bindValue<string>(mod.id, 'playerMessage');
 
 export function hideJoinGame() {
     trigger(mod.id, "HideJoinGameMenu");
@@ -36,34 +37,48 @@ export function hostGame() {
     trigger(mod.id, "HostGame");
 }
 
+export function sendMessage() {
+    trigger(mod.id, "SendMessage");
+}
+
 export const JoinGameSettings = () => {
     const GameOptionsCSS = getModule('game-ui/menu/components/shared/game-options/game-options.module.scss', 'classes');
+    const FooterButton = getModule('game-ui/menu/components/shared/detail-section/detail-section.tsx', 'FooterButton');
 
     let ipAddressValue = useValue(ipAddress);
     let portValue = useValue(port);
     let usernameValue = useValue(username);
     let enabled = useValue(joinGameEnabled);
+    let playerMessageVal = useValue(playerMessage);
 
     let outNetworkStates = useValue(listNetworkStates);
 
     const { translate } = useLocalization();
 
-    const focusChange = () => {};
+    const focusChange = () => { };
     return (
         <FocusBoundary onFocusChange={focusChange}>
             <div className={GameOptionsCSS.mainRow}>
                 <div className={GameOptionsCSS.optionsColumn}>
-                    <NavigationScope focused={null} onChange={() => {}}>
+                    <NavigationScope focused={null} onChange={() => { }}>
                         <InputField label={"CS2M.UI.IPAddress"} value={ipAddressValue} disabled={!enabled}
-                                    onChange={(val: any) => {setVal("SetJoinIpAddress", val)}}></InputField>
+                            onChange={(val: any) => { setVal("SetJoinIpAddress", val) }}></InputField>
                         <InputField label={"CS2M.UI.Port"} value={portValue} disabled={!enabled}
-                                    onChange={(val : any) => {setIntVal("SetJoinPort", val)}}></InputField>
+                            onChange={(val: any) => { setIntVal("SetJoinPort", val) }}></InputField>
                         <InputField label={"CS2M.UI.Username"} value={usernameValue} disabled={!enabled}
-                                    onChange={(val: any) => {setVal("SetUsername", val)}}></InputField>
+                            onChange={(val: any) => { setVal("SetUsername", val) }}></InputField>
+
                     </NavigationScope>
                 </div>
-                <div className={GameOptionsCSS.infoColumn} style={{whiteSpace:"pre-wrap"}}>
-                    {outNetworkStates}
+                <div className={GameOptionsCSS.infoColumn} style={{ whiteSpace: "pre-wrap" }}>
+                    <div style={{height: "90%"}}>
+                        {outNetworkStates}
+                    </div>
+                    <hr />
+                    <InputFieldWide disabled={!enabled} value={playerMessageVal}
+                        onChange={(val: any) => { setVal("SetMsgFromUsr", val) }}></InputFieldWide>
+                    <FooterButton disabled={false} 
+                        onSelect={sendMessage}>{translate("CS2M.UI.sendMessage", "Send")}</FooterButton>
                 </div>
             </div>
         </FocusBoundary>
@@ -81,8 +96,8 @@ export const JoinGameMenu = () => {
     const SaveListCSS = getModule('game-ui/menu/components/load-game-screen/save-list/save-list.module.scss', 'classes');
     const FooterButton = getModule('game-ui/menu/components/shared/detail-section/detail-section.tsx', 'FooterButton');
 
-    const visible : boolean = useValue(joinMenuVisible);
-    const modSupports  = useValue(modSupport);
+    const visible: boolean = useValue(joinMenuVisible);
+    const modSupports = useValue(modSupport);
     const enabled = useValue(joinGameEnabled);
     const enabled2 = useValue(hostGameEnabled);
 
@@ -114,7 +129,7 @@ export const JoinGameMenu = () => {
                     color = "orange";
                     break;
             }
-            details.push(<div style={{color: color}}><Field label={support.name}>{support_str}</Field></div>);
+            details.push(<div style={{ color: color }}><Field label={support.name}>{support_str}</Field></div>);
         }
     } else {
         detailsTitle = translate("CS2M.UI.JoiningGame", "Joining Game");
@@ -123,7 +138,7 @@ export const JoinGameMenu = () => {
     let footer = <>
         <FooterButton disabled={!enabled2} onSelect={hostGame}>{translate("CS2M.UI.HostChat", "Host Chat")}</FooterButton>
         <FooterButton disabled={!enabled} onSelect={joinGame}>{translate("CS2M.UI.JoinGame", "Join Game")}</FooterButton>
-        </>;
+    </>;
 
     let content;
     if (visible) {

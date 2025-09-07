@@ -21,6 +21,7 @@ namespace CS2M.UI
         private ValueBinding<bool> _hostMenuVisible;
 
         public ValueBinding<string> _NetworkStates;
+        private ValueBinding<string> _usrMsg;
 
         private ValueBinding<string> _joinIPAddress;
         private ValueBinding<int> _joinPort;
@@ -47,11 +48,12 @@ namespace CS2M.UI
         {
             base.OnCreate();
 
-
-
             AddBinding(new TriggerBinding(nameof(CS2M), "ShowMultiplayerMenu", ShowUITraversal));
+
             AddBinding(new TriggerBinding(nameof(CS2M), "HideJoinGameMenu", HideJoinGameMenu));
             AddBinding(new TriggerBinding(nameof(CS2M), "HideHostGameMenu", HideHostGameMenu));
+
+            
 
             AddBinding(new TriggerBinding<string>(nameof(CS2M), "SetJoinIpAddress", ip =>
             {
@@ -70,6 +72,15 @@ namespace CS2M.UI
                 _username.Update(username);
             }));
 
+            AddBinding(new TriggerBinding<string>(nameof(CS2M), "SetMsgFromUsr", usrMsg =>
+            {
+                _usrMsg.Update(usrMsg);
+            }));
+            
+            AddBinding(_usrMsg = new ValueBinding<string>(nameof(CS2M), "playerMessage", ""));
+
+
+
             AddBinding(new TriggerBinding(nameof(CS2M), "JoinGame", JoinGame));
             AddBinding(new TriggerBinding(nameof(CS2M), "HostGame", HostGame));
 
@@ -87,11 +98,18 @@ namespace CS2M.UI
             AddBinding(_playerStatus = new ValueBinding<string>(nameof(CS2M), "PlayerStatus", "Playing network session in CSII"));
 
             AddBinding(_NetworkStates = new ValueBinding<string>(nameof(CS2M), "uiNetworkStates", "= Waiting for commands ="));
+            AddBinding(new TriggerBinding(nameof(CS2M), "SendMessage", sendMessage));
         }
 
         private void RefreshModSupport()
         {
             _modSupportStatus.Update(ModCompat.GetModSupportList());
+        }
+
+        private void sendMessage()
+        {
+            Debug.Print(_username.value + ": " + _usrMsg.value);
+            piblishNetworkStateInUI(_username.value + ": " + _usrMsg.value);
         }
 
         private void ShowUITraversal()

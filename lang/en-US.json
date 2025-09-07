@@ -24,5 +24,6 @@
   "CS2M.UI.JoinGame": "Join game",
   "CS2M.UI.StartServer": "Start server",
   "CS2M.UI.HostGame": "Host game",
-  "CS2M.UI.HostChat": "Host Chat Server"
+  "CS2M.UI.HostChat": "Host Chat Server",
+  "CS2M.UI.SendMessage": "Send message"
 }
