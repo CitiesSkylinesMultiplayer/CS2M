@@ -4,6 +4,7 @@ import mod from "../../mod.json";
 import {FocusBoundary, NavigationScope} from "cs2/input";
 import {useLocalization} from "cs2/l10n";
 import {InputField} from "../util/input-field";
+import {setVal} from "../api";
 
 export const hostMenuVisible = bindValue<boolean>(mod.id, 'HostMenuVisible');
 export const modSupport = bindValue<Array<any>>(mod.id, 'modSupport');
@@ -14,10 +15,6 @@ export const playerStatus = bindValue<string>(mod.id, 'PlayerStatus');
 
 export function hideHostGame() {
     trigger(mod.id, "HideHostGameMenu");
-}
-
-export function setVal(name: string, value: any) {
-    trigger(mod.id, name, value);
 }
 
 export function setIntVal(name: string, value: any) {

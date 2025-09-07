@@ -1,6 +1,8 @@
+using Colossal;
 using Colossal.Serialization.Entities;
 using Colossal.UI.Binding;
 using CS2M.API.Networking;
+using CS2M.Helpers;
 using CS2M.Mods;
 using CS2M.Networking;
 using Game;
@@ -31,6 +33,8 @@ namespace CS2M.UI
 
         private ChatPanel ChatPanel { get; } = new ChatPanel();
 
+        private SaveLoadHelper _saveLoadHelper;
+
         protected override void OnStartRunning()
         {
             base.OnStartRunning();
@@ -46,6 +50,8 @@ namespace CS2M.UI
         {
             base.OnCreate();
 
+            _saveLoadHelper = World.GetOrCreateSystemManaged<SaveLoadHelper>();
+
             AddBinding(new TriggerBinding(Mod.Name, "ShowMultiplayerMenu", ShowJoinGameMenu));
             AddBinding(new TriggerBinding(Mod.Name, "HideJoinGameMenu", HideJoinGameMenu));
             AddBinding(new TriggerBinding(Mod.Name, "HideHostGameMenu", HideHostGameMenu));
@@ -56,7 +62,12 @@ namespace CS2M.UI
             AddBinding(new TriggerBinding<string>(Mod.Name, "SetUsername",
                 username => { _username.Update(username); }));
 
-            AddBinding(new TriggerBinding(Mod.Name, "JoinGame", JoinGame));
+            AddBinding(new TriggerBinding(Mod.Name, "JoinGame", () => TaskManager.instance.EnqueueTask("SaveLoadGame",
+                async () =>
+                {
+                    PacketStream stream = await _saveLoadHelper.SaveGame();
+                }
+            )));
             AddBinding(new TriggerBinding(Mod.Name, "HostGame", HostGame));
 
             AddBinding(_joinMenuVisible = new ValueBinding<bool>(Mod.Name, "JoinMenuVisible", false));
@@ -74,6 +85,8 @@ namespace CS2M.UI
             AddBinding(_playerStatus = new ValueBinding<string>(Mod.Name, "PlayerStatus", ""));
 
             RegisterChatPanelBindings();
+
+            NetworkInterface.Instance.LocalPlayer.PlayerStatusChangedEvent += (old, status) => { _playerStatus.Update(status.ToString()); };
         }
 
         private void RefreshModSupport()
