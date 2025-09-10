@@ -13,6 +13,7 @@ export const port = bindValue<number>(mod.id, 'JoinPort');
 export const username = bindValue<string>(mod.id, 'Username');
 export const joinGameEnabled = bindValue<boolean>(mod.id, 'JoinGameEnabled');
 export const hostGameEnabled = bindValue<boolean>(mod.id, 'HostGameEnabled');
+export const chatSendEnabled = bindValue<boolean>(mod.id, 'ChatSendEnabled');
 
 export const listNetworkStates = bindValue<string>(mod.id, 'uiNetworkStates');
 export const playerMessage = bindValue<string>(mod.id, 'playerMessage');
@@ -52,6 +53,7 @@ export const JoinGameSettings = () => {
     let playerMessageVal = useValue(playerMessage);
 
     let outNetworkStates = useValue(listNetworkStates);
+    let chatSendEnabledVal = useValue(chatSendEnabled);
 
     const { translate } = useLocalization();
 
@@ -77,7 +79,7 @@ export const JoinGameSettings = () => {
                     <hr />
                     <InputFieldWide disabled={!enabled} value={playerMessageVal}
                         onChange={(val: any) => { setVal("SetMsgFromUsr", val) }}></InputFieldWide>
-                    <FooterButton disabled={false} 
+                    <FooterButton disabled={!chatSendEnabledVal} 
                         onSelect={sendMessage}>{translate("CS2M.UI.sendMessage", "Send")}</FooterButton>
                 </div>
             </div>

@@ -14,5 +14,6 @@ namespace CS2M.API.Commands
         ///     The id of the sending player. -1 for the server.
         /// </summary>
         public int SenderId { get; set; }
+        public string MesasgeBody { get; set; }
     }
 }

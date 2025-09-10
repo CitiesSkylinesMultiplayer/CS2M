@@ -1,20 +1,32 @@
 using Colossal.Logging;
 using Colossal.Serialization.Entities;
 using Colossal.UI.Binding;
+using CS2M;
+using CS2M.API;
+using CS2M.API.Commands;
 using CS2M.API.Networking;
 using CS2M.Mods;
 using CS2M.Networking;
+using CS2M.UI;
 using Game;
 using Game.UI;
 using Game.UI.InGame;
+using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using Unity.Mathematics;
+using UnityEngine;
+using Random = System.Random;
 
 namespace CS2M.UI
 {
 
     public partial class UISystem : UISystemBase
     {
+
+        public static UISystem Instance { get; private set; }
+
+
         private ValueBinding<int> _activeMenuScreenBinding;
         private ValueBinding<int> _activeGameScreenBinding;
         private ValueBinding<bool> _joinMenuVisible;
@@ -29,6 +41,7 @@ namespace CS2M.UI
         private ValueBinding<string> _username;
         private ValueBinding<bool> _joinGameEnabled;
         private ValueBinding<bool> _hostGameEnabled;
+        private ValueBinding<bool> _chatSendEnabled;
         private ValueBinding<string> _playerStatus;
 
         private ValueBinding<List<ModSupportStatus>> _modSupportStatus;
@@ -47,13 +60,14 @@ namespace CS2M.UI
         protected override void OnCreate()
         {
             base.OnCreate();
+            Instance = this;
 
             AddBinding(new TriggerBinding(nameof(CS2M), "ShowMultiplayerMenu", ShowUITraversal));
 
             AddBinding(new TriggerBinding(nameof(CS2M), "HideJoinGameMenu", HideJoinGameMenu));
             AddBinding(new TriggerBinding(nameof(CS2M), "HideHostGameMenu", HideHostGameMenu));
 
-            
+
 
             AddBinding(new TriggerBinding<string>(nameof(CS2M), "SetJoinIpAddress", ip =>
             {
@@ -76,7 +90,7 @@ namespace CS2M.UI
             {
                 _usrMsg.Update(usrMsg);
             }));
-            
+
             AddBinding(_usrMsg = new ValueBinding<string>(nameof(CS2M), "playerMessage", ""));
 
 
@@ -86,19 +100,43 @@ namespace CS2M.UI
 
             AddBinding(_joinMenuVisible = new ValueBinding<bool>(nameof(CS2M), "JoinMenuVisible", false));
             AddBinding(_hostMenuVisible = new ValueBinding<bool>(nameof(CS2M), "HostMenuVisible", false));
-            AddBinding(_modSupportStatus = new ValueBinding<List<ModSupportStatus>>(nameof(CS2M), "modSupport", new List<ModSupportStatus>(),new ListWriter<ModSupportStatus>(new ValueWriter<ModSupportStatus>())));
+            AddBinding(_modSupportStatus = new ValueBinding<List<ModSupportStatus>>(nameof(CS2M), "modSupport", new List<ModSupportStatus>(), new ListWriter<ModSupportStatus>(new ValueWriter<ModSupportStatus>())));
 
             AddBinding(_joinIPAddress = new ValueBinding<string>(nameof(CS2M), "JoinIpAddress", "127.0.0.1"));
             AddBinding(_joinPort = new ValueBinding<int>(nameof(CS2M), "JoinPort", 4230));
             AddBinding(_hostPort = new ValueBinding<int>(nameof(CS2M), "HostPort", 4230));
-            AddBinding(_username = new ValueBinding<string>(nameof(CS2M), "Username", "CS2M_Player"));
+            Random rnd = new Random();
+            AddBinding(_username = new ValueBinding<string>(nameof(CS2M), "Username", "CS2M_u" + rnd.Next(100, 1000)));
+
             AddBinding(_joinGameEnabled = new ValueBinding<bool>(nameof(CS2M), "JoinGameEnabled", true));
             AddBinding(_hostGameEnabled = new ValueBinding<bool>(nameof(CS2M), "HostGameEnabled", true));
+            AddBinding(_chatSendEnabled = new ValueBinding<bool>(nameof(CS2M), "ChatSendEnabled", false));
 
             AddBinding(_playerStatus = new ValueBinding<string>(nameof(CS2M), "PlayerStatus", "Playing network session in CSII"));
 
             AddBinding(_NetworkStates = new ValueBinding<string>(nameof(CS2M), "uiNetworkStates", "= Waiting for commands ="));
             AddBinding(new TriggerBinding(nameof(CS2M), "SendMessage", sendMessage));
+
+            Command.ConnectToCSM(
+                sendToAll: NetworkInterface.Instance.SendToAll,
+                sendToServer: NetworkInterface.Instance.SendToServer,
+                sendToClients: NetworkInterface.Instance.SendToClients,
+                getCommandHandler: type =>
+                {
+                    if (type == typeof(PlayerJoinedCommand))
+                    {
+                        return new PlayerJoinedHandler();
+                    } 
+                    if (type == typeof(textMessageCommand))
+                    {
+                        return new textMessageHandler();
+                    }
+                    return null;                       
+                        
+                }
+            );
+
+            
         }
 
         private void RefreshModSupport()
@@ -108,21 +146,25 @@ namespace CS2M.UI
 
         private void sendMessage()
         {
-            Debug.Print(_username.value + ": " + _usrMsg.value);
-            piblishNetworkStateInUI(_username.value + ": " + _usrMsg.value);
+            string fullMessage = _username.value + ": " + _usrMsg.value;
+            Log.Info(fullMessage);
+            Command.SendToAll(new textMessageCommand(fullMessage));
+            //piblishNetworkStateInUI(fullMessage);
+            //NetworkInterface.Instance.SendToAll()
         }
+
 
         private void ShowUITraversal()
         {
             if (_gameMode == GameMode.MainMenu)
             {
                 ShowJoinGameMenu();
-                Debug.Print("I'm in game MainMenu. Opening Join UI");
+                Log.Info("I'm in game MainMenu. Opening Join UI");
             }
             else if (_gameMode == GameMode.Game)
             {
                 ShowHostGameMenu();
-                Debug.Print("I'm in active game session. Opening Host UI");
+                Log.Info("I'm in active game session. Opening Host UI");
             }
         }
 
@@ -191,16 +233,20 @@ namespace CS2M.UI
 
         private void JoinGame()
         {
-            NetworkInterface.Instance.Connect(new ConnectionConfig(_joinIPAddress.value, _joinPort.value, ""), piblishNetworkStateInUI);
+            NetworkInterface.Instance.LocalPlayer.Username = _username.value;
+            NetworkInterface.Instance.Connect(new ConnectionConfig(_joinIPAddress.value, _joinPort.value, ""));
             _hostGameEnabled.Update(false);
             _joinGameEnabled.Update(false);
+            _chatSendEnabled.Update(true);
         }
 
         private void HostGame()
         {
-            NetworkInterface.Instance.StartServer(new ConnectionConfig(_joinPort.value), piblishNetworkStateInUI);
+            NetworkInterface.Instance.LocalPlayer.Username = _username.value;
+            NetworkInterface.Instance.StartServer(new ConnectionConfig(_joinPort.value));
             _hostGameEnabled.Update(false);
-            _joinGameEnabled.Update(false); 
+            _joinGameEnabled.Update(false);
+            _chatSendEnabled.Update(true);
         }
 
         public void SetGameState(PlayerStatus status)
@@ -213,5 +259,54 @@ namespace CS2M.UI
             base.OnGameLoadingComplete(purpose, mode);
             _gameMode = mode;
         }
+    }
+
+}
+
+
+
+public class PlayerJoinedCommand : CommandBase
+{
+    public string PlayerName { get; set; }
+
+    public PlayerJoinedCommand() { }
+
+    public PlayerJoinedCommand(int senderId, string playerName)
+    {
+        SenderId = senderId;
+        PlayerName = playerName;
+        MesasgeBody = $"{playerName} has joined the server";
+    }
+
+}
+
+public class PlayerJoinedHandler : CommandHandler<PlayerJoinedCommand>
+{
+    protected override void Handle(PlayerJoinedCommand command)
+    {
+
+        Log.Info(command.MesasgeBody);
+        UISystem.Instance?.piblishNetworkStateInUI(command.MesasgeBody);
+
+    }
+}
+
+public class textMessageCommand : CommandBase
+{
+    public string Text { get; set; }
+    public textMessageCommand() { }
+
+    public textMessageCommand(string text)
+    {
+        Text = text;
+    }
+}
+
+public class textMessageHandler : CommandHandler<textMessageCommand>
+{
+    protected override void Handle(textMessageCommand command)
+    {
+        Log.Info($"User message: {command.Text}");
+        UISystem.Instance?.piblishNetworkStateInUI(command.Text);
     }
 }

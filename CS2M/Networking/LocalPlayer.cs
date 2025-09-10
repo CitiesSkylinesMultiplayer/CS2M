@@ -1,20 +1,28 @@
-﻿using CS2M.API.Commands;
+﻿using Colossal.Win32;
+using CS2M.API.Commands;
 using CS2M.API.Networking;
 using CS2M.Commands.ApiServer;
+using CS2M.UI;
 using LiteNetLib;
 using System;
+using static Game.Rendering.Debug.RenderPrefabRenderer;
 
 namespace CS2M.Networking
 {
     public class LocalPlayer : Player
     {
+
+        public static LocalPlayer Instance { get; private set; }
+
         private NetworkManager _networkManager;
+        private string _message;
 
         public LocalPlayer() : base()
         {
+            Instance = this;
         }
 
-        public bool GetServerInfo(ConnectionConfig connectionConfig, Action<string> onStart)
+        public bool GetServerInfo(ConnectionConfig connectionConfig)
         {
             if (PlayerStatus != PlayerStatus.INACTIVE)
             {
@@ -32,20 +40,31 @@ namespace CS2M.Networking
 
             if (!_networkManager.InitConnect(connectionConfig))
             {
-                onStart?.Invoke("= Can't init connect to server =");
+                _message = "= Can't init connect to server =";
+                printStatus(_message);
                 return false;
             }
 
             if (!_networkManager.SetupNatConnect())
             {
-                onStart?.Invoke("= Can't perform NAT connection to server ");
+                _message = "= Can't perform NAT connection to server ";
+                printStatus(_message);
                 return false;
             }
 
             PlayerType = PlayerType.CLIENT;
             PlayerStatus = PlayerStatus.GET_SERVER_INFO;
-            onStart?.Invoke("= Connection to server is succsesful! =");
+
+            _message = "= Connection to server is succsesful! =";
+            printStatus(_message);
+
             return true;
+        }
+
+        private void printStatus(string message)
+        {
+            Log.Info(message);
+            UISystem.Instance.piblishNetworkStateInUI(message);
         }
 
         public bool NatConnect()
@@ -86,8 +105,22 @@ namespace CS2M.Networking
         public bool DownloadingMap()
         {
             // TODO: Change, when implemented Map transfer
+
+            if (PlayerType == PlayerType.SERVER)
+            {
+                Command.CurrentRole = MultiplayerRole.Server;
+            }
+            else if (PlayerType == PlayerType.CLIENT)
+            {
+                Command.CurrentRole= MultiplayerRole.Client;
+            }
+            
+            Command.SendToAll(new textMessageCommand($"= {Username} joined game ="));
+            _networkManager.CancelConnectTimeout();
             return Playing();
         }
+
+
 
         public void LoadingMap()
         {
@@ -99,7 +132,7 @@ namespace CS2M.Networking
         }
 
         // INACTIVE -> PLAYING (Server)
-        public bool Playing(ConnectionConfig connectionConfig, Action<string> onStart)
+        public bool Playing(ConnectionConfig connectionConfig)
         {
             if (PlayerStatus != PlayerStatus.INACTIVE)
             {
@@ -111,7 +144,8 @@ namespace CS2M.Networking
             bool serverStarted = _networkManager.StartServer(connectionConfig);
             if (!serverStarted)
             {
-                onStart?.Invoke("= Error! The server failed to start. =");
+                _message = "= Error! The server failed to start. =";
+                printStatus(_message);
                 return false;
             }
 
@@ -119,8 +153,9 @@ namespace CS2M.Networking
             PlayerType = PlayerType.SERVER;
             PlayerStatus = PlayerStatus.PLAYING;
 
-            onStart?.Invoke("= The server has started succesfully. =");
-            
+            _message = "= The server has started succesfully. =";
+            printStatus(_message);
+
             return true;
         }
 
@@ -164,11 +199,14 @@ namespace CS2M.Networking
             if (PlayerType == PlayerType.SERVER)
             {
                 _networkManager.SendToAllClients(message);
+                Command.GetCommandHandler(message.GetType())?.Parse(message);
             }
             else
             {
                 _networkManager.SendToServer(message);
             }
+            
+
         }
 
         public void SendToClient(NetPeer peer, CommandBase message)

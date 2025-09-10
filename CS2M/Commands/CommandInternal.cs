@@ -115,6 +115,11 @@ namespace CS2M.Commands
             return MessagePackSerializer.Serialize(command, _model);
         }
 
+        public CommandBase Deserialize(byte[] data)
+        {
+            return (CommandBase)MessagePackSerializer.Deserialize(typeof(CommandBase), data, _model);
+        }
+
         public void RefreshModel()
         {
             _cmdMapping.Clear();

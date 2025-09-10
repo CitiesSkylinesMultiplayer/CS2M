@@ -18,14 +18,14 @@ namespace CS2M.Networking
             LocalPlayer.OnUpdate();
         }
 
-        public void Connect(ConnectionConfig connectionConfig, Action<string> onStart)
+        public void Connect(ConnectionConfig connectionConfig)
         {
-            LocalPlayer.GetServerInfo(connectionConfig, onStart);
+            LocalPlayer.GetServerInfo(connectionConfig);
         }
 
-        public void StartServer(ConnectionConfig connectionConfig, Action<string> onStart)
+        public void StartServer(ConnectionConfig connectionConfig)
         {
-            LocalPlayer.Playing(connectionConfig, onStart);
+            LocalPlayer.Playing(connectionConfig);
         }
 
         public void SendToAll(CommandBase message)

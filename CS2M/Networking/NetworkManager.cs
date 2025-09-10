@@ -1,14 +1,17 @@
 ﻿using Colossal.UI.Binding;
+using Colossal.Win32;
 using CS2M.API.Commands;
 using CS2M.API.Networking;
 using CS2M.Commands;
 using CS2M.Commands.ApiServer;
 using CS2M.UI;
 using CS2M.Util;
+using Game.Objects;
 using LiteNetLib;
 using System;
 using System.Net;
 using System.Net.Sockets;
+using Unity.Entities.UniversalDelegates;
 using Timer = System.Timers.Timer;
 
 namespace CS2M.Networking
@@ -16,6 +19,9 @@ namespace CS2M.Networking
     public class NetworkManager
     {
         private const string ConnectionKey = "CSM";
+        private const int timerDelayNatScan = 1000;
+        private const int timerDelayClientAutoDisconnect = 10000;
+        private bool _connectTimeoutCanceled = false;
 
         private readonly NetManager _netManager;
         private readonly ApiServer _apiServer;
@@ -76,7 +82,7 @@ namespace CS2M.Networking
             }
             else
             {
-                Log.Info("The client conected to server succesfuly!");
+                Log.Info("The client started succesfuly! Trying to connect...");
             }
 
             return true;
@@ -104,12 +110,16 @@ namespace CS2M.Networking
 
             EventBasedNatPunchListener natPunchListener = new EventBasedNatPunchListener();
             _timeout = new Timer();
-            _timeout.Interval = 5000;
+            _timeout.Interval = timerDelayNatScan;
             _timeout.AutoReset = false;
             _timeout.Elapsed += (sender, args) =>
             {
                 _pollNatEvent = false;
                 _connectEndpoint = directEndpoint;
+                Log.Info("Using DirectEndpoint");
+
+                Connect();
+
                 NatHolePunchFailedEvent?.Invoke();
             };
 
@@ -119,6 +129,8 @@ namespace CS2M.Networking
             {
                 _pollNatEvent = false;
                 _connectEndpoint = point;
+                Log.Info("Using Endpoint behind NAT");
+
                 bool? eventResult = NatHolePunchSuccessfulEvent?.Invoke();
                 if (eventResult != null && eventResult.Value)
                 {
@@ -150,7 +162,23 @@ namespace CS2M.Networking
                     $"Could not send NAT introduction request to API server at {Mod.ModSettings.ApiServer}:{Mod.ModSettings.ApiServerPort}: {e}");
             }
 
+
             return true;
+        }
+
+        public void CancelConnectTimeout()
+        {
+
+            _connectTimeoutCanceled = true;
+
+            if (_timeout != null)
+            {
+
+                _timeout.Stop();
+                _timeout.Dispose();
+                _timeout = null;
+                Log.Info("Auto-Disconnect canceled!");
+            }
         }
 
         public bool Connect()
@@ -164,11 +192,19 @@ namespace CS2M.Networking
             try
             {
                 _timeout = new Timer();
-                _timeout.Interval = 5000;
+                _timeout.Interval = timerDelayClientAutoDisconnect;
                 _timeout.AutoReset = false;
                 _timeout.Elapsed += (sender, args) =>
                 {
+                    if (_connectTimeoutCanceled)
+                    {
+                        Log.Info("Qued Auto-Disconnect canceled!");
+                        return;
+                    }
+
                     ClientConnectFailedEvent?.Invoke();
+                    UISystem.Instance?
+                    .piblishNetworkStateInUI($"= You have been disconnected, due timout in {timerDelayClientAutoDisconnect / 1000} sec. =");
                 };
                 
                 _netManager.Connect(_connectEndpoint, ConnectionKey);
@@ -187,6 +223,32 @@ namespace CS2M.Networking
             DeliveryMethod deliveryMethod)
         {
             // TODO: Process received data
+            try
+            {
+                // Получаем байты команды
+                byte[] rawBytes = reader.GetRemainingBytes();
+
+                // Десериализуем в CommandBase
+                CommandBase command = CommandInternal.Instance.Deserialize(rawBytes);
+
+                // Передаём в обработчик
+                Command.GetCommandHandler(command.GetType())?.Parse(command);
+
+                Log.Info($"Recieved from {peer.Address}: {command.GetType().Name}");
+
+                Log.Info($"This coammand role: {LocalPlayer.Instance.PlayerType}");
+                            
+                if (LocalPlayer.Instance.PlayerType == PlayerType.SERVER) { 
+                    LocalPlayer.Instance.SendToClients(command);
+                }
+
+            }
+            catch (Exception ex)
+            {
+                Log.Error("Error in processing Command", ex);
+            }
+
+
         }
 
         private void ListenerOnPeerConnectedEvent(NetPeer peer)
@@ -199,6 +261,7 @@ namespace CS2M.Networking
             else if (NetworkInterface.Instance.LocalPlayer.PlayerType == PlayerType.SERVER)
             {
                 // TODO: Handle peer connect on server
+                UISystem.Instance?.piblishNetworkStateInUI($"= Client connected =");
             }
         }
 
@@ -213,6 +276,11 @@ namespace CS2M.Networking
             {
                 // TODO: Handle peer disconnect on server
             }
+
+            Log.Info($"Disconnected: {disconnectInfo.Reason}");
+            Log.Debug(Environment.StackTrace);
+            UISystem.Instance?.piblishNetworkStateInUI($"= Disconnectet from server\r\n {disconnectInfo.Reason}=");
+
         }
 
         private void ListenerOnNetworkErrorEvent(IPEndPoint endpoint, SocketError socketError)
@@ -250,13 +318,15 @@ namespace CS2M.Networking
             _netManager.PollEvents();
 
             // Trigger keepalive to api server
-            // _apiServer.KeepAlive(_connectionConfig);
+            //_apiServer.KeepAlive(_connectionConfig);
         }
 
         public void SendToAllClients(CommandBase message)
         {
             _netManager.SendToAll(CommandInternal.Instance.Serialize(message), DeliveryMethod.ReliableOrdered);
-            
+
+            Log.Debug("Connected peers: " + _netManager.ConnectedPeersCount);
+
             Log.Debug($"Sending {message.GetType().Name} to all clients");
         }
         
@@ -269,10 +339,18 @@ namespace CS2M.Networking
         
         public void SendToServer(CommandBase message)
         {
-            NetPeer server = _netManager.ConnectedPeerList[0];
-            server.Send(CommandInternal.Instance.Serialize(message), DeliveryMethod.ReliableOrdered);
-            
-            Log.Debug($"Sending {message.GetType().Name} to server");
+
+            if (_netManager.FirstPeer != null)
+            {
+                NetPeer server = _netManager.FirstPeer;
+                server.Send(CommandInternal.Instance.Serialize(message), DeliveryMethod.ReliableOrdered);
+                Log.Debug($"Sending {message.GetType().Name} to server");
+            } else
+            {
+                Log.Debug("Can't get server object, no message sent");
+            }
+
+                
         }
 
         public void SendToApiServer(ApiCommandBase message)
@@ -309,8 +387,12 @@ namespace CS2M.Networking
 
         public void Stop()
         {
+            string msg = "NetworkManager stopped.";
+            Log.Debug("StackTrace:\n" + Environment.StackTrace);
             _netManager.Stop();
-            Log.Info("NetworkManager stopped.");
+
+            Log.Info(msg);
+            UISystem.Instance?.piblishNetworkStateInUI(msg);
         }
     }
 }
