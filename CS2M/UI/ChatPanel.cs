@@ -10,8 +10,8 @@ using System.Collections.Generic;
 namespace CS2M.UI
 {
     /// <summary>
-    /// Displays a chat to the users screen in a pop up bubble. 
-    /// Allows a user to send messages to other players and view 
+    /// Displays a chat to the users screen in a pop up bubble.
+    /// Allows a user to send messages to other players and view
     /// events such as server startup and player connections.
     /// </summary>
     public class ChatPanel : EntityGamePanel, IChat
@@ -54,33 +54,40 @@ namespace CS2M.UI
         {
             Chat.Instance = this;
 
-            ChatMessages = new ValueBinding<List<Message>>(Mod.Name, nameof(ChatMessages), new List<Message>(), new ListWriter<Message>(new ValueWriter<Message>()));
+            ChatMessages = new ValueBinding<List<Message>>(Mod.Name, nameof(ChatMessages), new List<Message>(),
+                new ListWriter<Message>(new ValueWriter<Message>()));
             CurrentUsername = new ValueBinding<string>(Mod.Name, nameof(CurrentUsername), GetCurrentUsername());
             LocalChatMessage = new ValueBinding<string>(Mod.Name, nameof(LocalChatMessage), string.Empty);
             SendChatMessage = new TriggerBinding(Mod.Name, nameof(SendChatMessage), () => SendMessage());
-            SetLocalChatMessage = new TriggerBinding<string>(Mod.Name, nameof(SetLocalChatMessage), message => UpdateChatMessage(message));
+            SetLocalChatMessage = new TriggerBinding<string>(Mod.Name, nameof(SetLocalChatMessage),
+                message => UpdateChatMessage(message));
         }
 
         private void UpdateChatMessage(string message)
         {
-            if (message.EndsWith("\n")) {
+            if (message.EndsWith("\n"))
+            {
                 // User has pressed 'Enter' so we send the message they have input.
                 SendMessage();
             }
-            else {
+            else
+            {
                 LocalChatMessage.Update(message);
             }
         }
 
         private void SendMessage()
         {
-            // TODO add a check to see if user is connected to a server.
             string username = GetCurrentUsername();
-            if (string.IsNullOrEmpty(username)) {
-                return;
+            if (string.IsNullOrEmpty(username))
+            {
+                username = "Local";
             }
 
-            ChatMessageCommand message = new ChatMessageCommand() {
+            PrintChatMessage(username, LocalChatMessage.value);
+
+            ChatMessageCommand message = new ChatMessageCommand()
+            {
                 Username = GetCurrentUsername(),
                 Message = LocalChatMessage.value
             };
@@ -102,6 +109,18 @@ namespace CS2M.UI
         /// <param name="msg">The message.</param>
         public void PrintGameMessage(string msg)
         {
+            PrintMessage(Mod.Name, msg);
+        }
+
+        /// <summary>
+        /// Prints a game message of a specific type to the ChatPanel
+        /// </summary>
+        /// <param name="type">The message type</param>
+        /// <param name="msg">The message</param>
+        /// <exception cref="NotImplementedException"></exception>
+        public void PrintGameMessage(Chat.MessageType type, string msg)
+        {
+            // TODO: Format according to type
             PrintMessage(Mod.Name, msg);
         }
 

@@ -10,8 +10,8 @@
     </PropertyGroup>
 
     <!--Imports must be after PropertyGroup block-->
-    <Import Project="$([System.Environment]::GetEnvironmentVariable('CSII_TOOLPATH', 'EnvironmentVariableTarget.Process'))\Mod.props" />
-    <Import Project="$([System.Environment]::GetEnvironmentVariable('CSII_TOOLPATH', 'EnvironmentVariableTarget.Process'))\Mod.targets" />
+    <Import Project="$([System.Environment]::GetEnvironmentVariable('CSII_TOOLPATH', 'EnvironmentVariableTarget.Process'))\Mod.props"/>
+    <Import Project="$([System.Environment]::GetEnvironmentVariable('CSII_TOOLPATH', 'EnvironmentVariableTarget.Process'))\Mod.targets"/>
 
     <ItemGroup>
         <Reference Include="Colossal.UI.Binding">
@@ -65,25 +65,24 @@
     </ItemGroup>
 
     <ItemGroup>
-        <None Include="$(ModPropsFile)" Link="Properties\Mod.props" />
-        <None Include="$(ModTargetsFile)" Link="Properties\Mod.targets" />
+        <None Include="$(ModPropsFile)" Link="Properties\Mod.props"/>
+        <None Include="$(ModTargetsFile)" Link="Properties\Mod.targets"/>
     </ItemGroup>
 
     <ItemGroup>
-        <ProjectReference Include="..\CS2M.API\CS2M.API.csproj" />
-        <ProjectReference Include="..\CS2M.BaseGame\CS2M.BaseGame.csproj" />
+        <ProjectReference Include="..\CS2M.API\CS2M.API.csproj"/>
+        <ProjectReference Include="..\CS2M.BaseGame\CS2M.BaseGame.csproj"/>
     </ItemGroup>
 
     <ItemGroup>
-        <PackageReference Include="CS2-ModdingTools" Version="1.0.4" />
         <PackageReference Include="ILRepack.Lib.MSBuild.Task" Version="2.0.37">
-          <PrivateAssets>all</PrivateAssets>
-          <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+            <PrivateAssets>all</PrivateAssets>
+            <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
         </PackageReference>
-        <PackageReference Include="LiteNetLib" Version="1.3.1" />
-        <PackageReference Include="MessagePack" Version="3.1.3" />
-        <PackageReference Include="MessagePack.Attributeless" Version="1.0.1" />
-        <PackageReference Include="MessagePack.UnityShims" Version="3.1.3" />
+        <PackageReference Include="LiteNetLib" Version="1.3.1"/>
+        <PackageReference Include="MessagePack" Version="3.1.3"/>
+        <PackageReference Include="MessagePack.Attributeless" Version="1.0.1"/>
+        <PackageReference Include="MessagePack.UnityShims" Version="3.1.3"/>
     </ItemGroup>
 
     <ItemGroup>
@@ -93,51 +92,52 @@
     </ItemGroup>
 
     <ItemGroup>
-		<PackAssemblies Include="$(OutputPath)\CS2M.API.dll" />
-		<PackAssemblies Include="$(OutputPath)\CS2M.BaseGame.dll" />
-		<PackAssemblies Include="$(OutputPath)\LiteNetLib.dll" />
-		<PackAssemblies Include="$(OutputPath)\MessagePack.Annotations.dll" />
-		<PackAssemblies Include="$(OutputPath)\MessagePack.Attributeless.dll" />
-		<PackAssemblies Include="$(OutputPath)\MessagePack.dll" />
-		<PackAssemblies Include="$(OutputPath)\MessagePack.UnityShims.dll" />
-		<PackAssemblies Include="$(OutputPath)\Microsoft.Bcl.AsyncInterfaces.dll" />
-		<PackAssemblies Include="$(OutputPath)\Microsoft.NET.StringTools.dll" />
-		<PackAssemblies Include="$(OutputPath)\System.Buffers.dll" />
-		<PackAssemblies Include="$(OutputPath)\System.Collections.Immutable.dll" />
-		<PackAssemblies Include="$(OutputPath)\System.Memory.dll" />
-		<PackAssemblies Include="$(OutputPath)\System.Numerics.Vectors.dll" />
-		<PackAssemblies Include="$(OutputPath)\System.Runtime.CompilerServices.Unsafe.dll" />
-		<PackAssemblies Include="$(OutputPath)\System.Threading.Tasks.Extensions.dll" />
+        <PackAssemblies Include="$(OutputPath)\LiteNetLib.dll"/>
+        <PackAssemblies Include="$(OutputPath)\MessagePack.Annotations.dll"/>
+        <PackAssemblies Include="$(OutputPath)\MessagePack.Attributeless.dll"/>
+        <PackAssemblies Include="$(OutputPath)\MessagePack.dll"/>
+        <PackAssemblies Include="$(OutputPath)\MessagePack.UnityShims.dll"/>
+        <PackAssemblies Include="$(OutputPath)\Microsoft.Bcl.AsyncInterfaces.dll"/>
+        <PackAssemblies Include="$(OutputPath)\Microsoft.NET.StringTools.dll"/>
+        <PackAssemblies Include="$(OutputPath)\System.Buffers.dll"/>
+        <PackAssemblies Include="$(OutputPath)\System.Collections.Immutable.dll"/>
+        <PackAssemblies Include="$(OutputPath)\System.Memory.dll"/>
+        <PackAssemblies Include="$(OutputPath)\System.Numerics.Vectors.dll"/>
+        <PackAssemblies Include="$(OutputPath)\System.Runtime.CompilerServices.Unsafe.dll"/>
+        <PackAssemblies Include="$(OutputPath)\System.Threading.Tasks.Extensions.dll"/>
+        <PackAssemblies Include="$(OutputPath)\System.Reflection.Emit.dll"/>
+        <PackAssemblies Include="$(OutputPath)\System.Reflection.Emit.Lightweight.dll"/>
+        <PackAssemblies Include="$(OutputPath)\System.Reflection.Emit.ILGeneration.dll"/>
     </ItemGroup>
 
     <Target Name="CopyEmits" AfterTargets="Build">
         <ItemGroup>
-            <AdditionalAssemblies Include="$(ProjectDir)/../assemblies/*.dll" />
+            <AdditionalAssemblies Include="$(ProjectDir)/../assemblies/*.dll"/>
         </ItemGroup>
-        <Copy SourceFiles="@(AdditionalAssemblies)" DestinationFolder="$(OutDir)" />
+        <Copy SourceFiles="@(AdditionalAssemblies)" DestinationFolder="$(OutDir)"/>
     </Target>
 
     <!-- ILRepack -->
     <Target Name="ILRepacker" AfterTargets="Build">
         <ItemGroup>
-            <InputAssemblies Include="$(OutputPath)\CS2M.dll" />
-            <InputAssemblies Include="@(PackAssemblies)" />
+            <InputAssemblies Include="$(OutputPath)\CS2M.dll"/>
+            <InputAssemblies Include="@(PackAssemblies)"/>
         </ItemGroup>
 
-        <ILRepack Parallel="true" Internalize="true" InputAssemblies="@(InputAssemblies)" LibraryPath="$(AssemblySearchPaths)" TargetKind="Dll" OutputFile="$(OutputPath)\$(AssemblyName).dll" />
+        <ILRepack Parallel="true" Internalize="true" InputAssemblies="@(InputAssemblies)" LibraryPath="$(AssemblySearchPaths)" TargetKind="Dll" OutputFile="$(OutputPath)\$(AssemblyName).dll"/>
     </Target>
 
     <Target Name="DeployWIP" AfterTargets="ILRepacker" Condition="'$(NeedBuild)'">
         <ItemGroup>
-            <FilesToDeploy Include="$(OutDir)\**\*.*" Exclude="@(PackAssemblies)" />
+            <FilesToDeploy Include="$(OutDir)\**\*.*" Exclude="@(PackAssemblies)"/>
         </ItemGroup>
-        <Message Text="Copy output to deploy directory $(DeployDir)" Importance="high" />
-        <RemoveDir Directories="$(DeployDir)" />
-        <Copy SourceFiles="@(FilesToDeploy)" DestinationFiles="@(FilesToDeploy->'$(DeployDir)\%(RecursiveDir)%(Filename)%(Extension)')" />
+        <Message Text="Copy output to deploy directory $(DeployDir)" Importance="high"/>
+        <RemoveDir Directories="$(DeployDir)"/>
+        <Copy SourceFiles="@(FilesToDeploy)" DestinationFiles="@(FilesToDeploy->'$(DeployDir)\%(RecursiveDir)%(Filename)%(Extension)')"/>
     </Target>
 
     <Target Name="BuildUI" AfterTargets="ILRepacker">
-        <Exec Command="npm run build" WorkingDirectory="$(ProjectDir)/../CS2M.UI" />
+        <Exec Command="npm run build" WorkingDirectory="$(ProjectDir)/../CS2M.UI"/>
     </Target>
 
 </Project>
