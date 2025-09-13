@@ -1,18 +1,25 @@
-﻿using CS2M.API.Commands;
+﻿using Colossal;
+using CS2M.API.Commands;
 using CS2M.API.Networking;
+using CS2M.Commands;
 using CS2M.Commands.ApiServer;
+using CS2M.Helpers;
 using LiteNetLib;
+using Unity.Entities;
 
 namespace CS2M.Networking
 {
     public class LocalPlayer : Player
     {
+        private readonly SlicedPacketStream _packetStream = new SlicedPacketStream();
+        private readonly SaveLoadHelper _saveLoadHelper;
         private NetworkManager _networkManager;
 
-        public LocalPlayer() : base()
+        public LocalPlayer()
         {
             PlayerStatusChangedEvent += PlayerStatusChanged;
             PlayerTypeChangedEvent += PlayerTypeChanged;
+            _saveLoadHelper = World.DefaultGameObjectInjectionWorld.GetOrCreateSystemManaged<SaveLoadHelper>();
         }
 
         public bool GetServerInfo(ConnectionConfig connectionConfig)
@@ -83,16 +90,60 @@ namespace CS2M.Networking
 
         public bool DownloadingMap()
         {
-            // TODO: Change, when implemented Map transfer
-            return Playing();
+            if (PlayerStatus != PlayerStatus.DIRECT_CONNECT)
+            {
+                return false;
+            }
+
+            _packetStream.Clear();
+            // Change state to downloading map, next step is to wait until all
+            // map packets have been received by `SliceReceived` below.
+            PlayerStatus = PlayerStatus.DOWNLOADING_MAP;
+            return true;
+        }
+
+        public void SliceReceived(WorldTransferCommand cmd)
+        {
+            if (PlayerStatus != PlayerStatus.DOWNLOADING_MAP)
+            {
+                Log.Warn("Received world slice, but not in downloading state");
+                return;
+            }
+
+            _packetStream.AppendSlice(cmd.WorldSlice);
+            if (cmd.RemainingBytes == 0)
+            {
+                LoadingMap();
+            }
         }
 
         public void LoadingMap()
         {
+            if (PlayerStatus != PlayerStatus.DOWNLOADING_MAP)
+            {
+                return;
+            }
+
+            PlayerStatus = PlayerStatus.LOADING_MAP;
+            TaskManager.instance.EnqueueTask("LoadMap", async () =>
+            {
+                bool success = await _saveLoadHelper.LoadGame(_packetStream);
+                if (success)
+                {
+                    Playing();
+                }
+                // TODO: Error handling
+            });
         }
 
         public bool Playing()
         {
+            if (PlayerStatus != PlayerStatus.LOADING_MAP)
+            {
+                return false;
+            }
+
+            PlayerStatus = PlayerStatus.PLAYING;
             return true;
         }
 
@@ -139,6 +190,7 @@ namespace CS2M.Networking
             {
                 //TODO: Clean-Up client
             }
+
             _networkManager.Stop();
 
             PlayerStatus = PlayerStatus.INACTIVE;

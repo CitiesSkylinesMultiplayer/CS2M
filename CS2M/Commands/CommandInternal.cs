@@ -106,7 +106,7 @@ namespace CS2M.Commands
         /// <returns>The handler for the given command.</returns>
         public CommandHandler GetCommandHandler(Type commandType)
         {
-            _cmdMapping.TryGetValue(commandType, out CommandHandler handler);
+            _cmdMapping.TryGetValue(commandType, out var handler);
             return handler;
         }
 
@@ -116,7 +116,7 @@ namespace CS2M.Commands
         /// <returns>The handler for the given command.</returns>
         public TH GetCommandHandler<T, TH>() where T : CommandBase where TH : CommandHandler<T>
         {
-            _cmdMapping.TryGetValue(typeof(T), out CommandHandler handler);
+            _cmdMapping.TryGetValue(typeof(T), out var handler);
             return (TH)handler;
         }
 

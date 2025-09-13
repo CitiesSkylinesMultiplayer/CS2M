@@ -113,6 +113,7 @@
         <PackAssemblies Include="$(OutputPath)\System.Reflection.Emit.dll"/>
         <PackAssemblies Include="$(OutputPath)\System.Reflection.Emit.Lightweight.dll"/>
         <PackAssemblies Include="$(OutputPath)\System.Reflection.Emit.ILGeneration.dll"/>
+        <PackAssemblies Include="$(OutputPath)\0Harmony.dll"/>
     </ItemGroup>
 
     <Target Name="CopyEmits" AfterTargets="Build">
