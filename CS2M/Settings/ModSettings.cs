@@ -1,26 +1,26 @@
-using System.Collections.Generic;
 using Colossal.IO.AssetDatabase;
 using Colossal.Logging;
 using Game.Modding;
 using Game.Settings;
 using Game.UI.Widgets;
+using System.Collections.Generic;
 
 namespace CS2M.Settings
 {
 
-    [FileLocation(nameof(CS2M))]
+    [FileLocation(Mod.Name)]
     [SettingsUITabOrder(Section)]
     [SettingsUIGroupOrder(GeneralSettings, AdvancedSettings)]
     [SettingsUIShowGroupName(GeneralSettings, AdvancedSettings)]
-    public class Settings : ModSetting
+    public class ModSettings : ModSetting
     {
         private const string Section = "CS2M";
         private const string GeneralSettings = "GeneralSettings";
         private const string AdvancedSettings = "AdvancedSettings";
 
         [SettingsUISection(Section, GeneralSettings)]
-        [SettingsUIDropdown(typeof(Settings), nameof(GetLoggingLevels))]
-        [SettingsUISetter(typeof (Settings), nameof(OnSetLoggingLevel))]
+        [SettingsUIDropdown(typeof(ModSettings), nameof(GetLoggingLevels))]
+        [SettingsUISetter(typeof(ModSettings), nameof(OnSetLoggingLevel))]
         public int LoggingLevel { get; set; }
 
         [SettingsUISection(Section, AdvancedSettings)]
@@ -31,14 +31,14 @@ namespace CS2M.Settings
         [SettingsUITextInput]
         public string ApiServerPort { get; set; }
 
-        public Settings(IMod mod) : base(mod)
+        public ModSettings(IMod mod) : base(mod)
         {
             SetDefaults();
         }
 
         public sealed override void SetDefaults()
         {
-            LoggingLevel = Level.Debug.severity;
+            LoggingLevel = Level.Info.severity;
             ApiServer = "api.citiesskylinesmultiplayer.com";
             ApiServerPort = "4242";
         }

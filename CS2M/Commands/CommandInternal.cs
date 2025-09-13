@@ -1,8 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Reflection;
-using CS2M.API;
+﻿using CS2M.API;
 using CS2M.API.Commands;
 using CS2M.API.Networking;
 using CS2M.Helpers;
@@ -11,6 +7,11 @@ using CS2M.Networking;
 using MessagePack;
 using MessagePack.Attributeless;
 using MessagePack.Resolvers;
+using System;
+using System.Collections.Concurrent;
+using System.Collections.Generic;
+using System.Linq;
+using System.Reflection;
 
 namespace CS2M.Commands
 {
@@ -18,7 +19,7 @@ namespace CS2M.Commands
     {
         public static CommandInternal Instance;
 
-        private readonly Dictionary<Type, CommandHandler> _cmdMapping = new Dictionary<Type, CommandHandler>();
+        private readonly ConcurrentDictionary<Type, CommandHandler> _cmdMapping = new ConcurrentDictionary<Type, CommandHandler>();
 
         private MessagePackSerializerOptions _model;
 
@@ -104,7 +105,7 @@ namespace CS2M.Commands
         ///     This method is used to get the handler of given command.
         /// </summary>
         /// <returns>The handler for the given command.</returns>
-        public TH GetCommandHandler<T, TH>() where T : CommandBase where TH: CommandHandler<T>
+        public TH GetCommandHandler<T, TH>() where T : CommandBase where TH : CommandHandler<T>
         {
             _cmdMapping.TryGetValue(typeof(T), out CommandHandler handler);
             return (TH)handler;
@@ -149,7 +150,11 @@ namespace CS2M.Commands
                 foreach (Type type in handlers)
                 {
                     CommandHandler handler = (CommandHandler)Activator.CreateInstance(type);
-                    _cmdMapping.Add(handler.GetDataType(), handler);
+                    bool added = _cmdMapping.TryAdd(handler.GetDataType(), handler);
+                    if (!added)
+                    {
+                        Log.Debug($"Handler for {handler.GetDataType()} already exists");
+                    }
 
                     // Add subtype to the MsgPack model with all attributes
                     options.SubType(typeof(CommandBase), handler.GetDataType());

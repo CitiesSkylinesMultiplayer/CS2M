@@ -1,5 +1,8 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 17
+VisualStudioVersion = 17.12.35707.178 d17.12
+MinimumVisualStudioVersion = 10.0.40219.1
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CS2M", "CS2M\CS2M.csproj", "{EDB4C83E-C951-40B3-A0F9-555821957AA4}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CS2M.API", "CS2M.API\CS2M.API.csproj", "{F335F74A-E2A1-4B9A-90E7-68E1ECA6B396}"
@@ -7,6 +10,13 @@ EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CS2M.Test", "CS2M.Test\CS2M.Test.csproj", "{B8CF0DB3-7863-4BED-9863-FCF274433A97}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CS2M.BaseGame", "CS2M.BaseGame\CS2M.BaseGame.csproj", "{F7AF1B61-B1A1-42C6-889F-90CF7CF79FB7}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{3BECA4A1-BA6B-463B-BE16-23E34BF943E4}"
+	ProjectSection(SolutionItems) = preProject
+		.gitignore = .gitignore
+		LICENSE = LICENSE
+		README.md = README.md
+	EndProjectSection
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -30,5 +40,8 @@ Global
 		{F7AF1B61-B1A1-42C6-889F-90CF7CF79FB7}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{F7AF1B61-B1A1-42C6-889F-90CF7CF79FB7}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{F7AF1B61-B1A1-42C6-889F-90CF7CF79FB7}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
 	EndGlobalSection
 EndGlobal

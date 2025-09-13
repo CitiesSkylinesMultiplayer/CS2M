@@ -11,6 +11,8 @@ namespace CS2M.Networking
 
         public LocalPlayer() : base()
         {
+            PlayerStatusChangedEvent += PlayerStatusChanged;
+            PlayerTypeChangedEvent += PlayerTypeChanged;
         }
 
         public bool GetServerInfo(ConnectionConfig connectionConfig)
@@ -50,13 +52,13 @@ namespace CS2M.Networking
             {
                 return false;
             }
-            
+
             if (!_networkManager.Connect())
             {
                 Inactive();
                 return false;
             }
-            
+
             PlayerStatus = PlayerStatus.NAT_CONNECT;
             return true;
         }
@@ -74,7 +76,7 @@ namespace CS2M.Networking
                 Inactive();
                 return false;
             }
-            
+
             PlayerStatus = PlayerStatus.DIRECT_CONNECT;
             return true;
         }
@@ -109,11 +111,11 @@ namespace CS2M.Networking
             {
                 return false;
             }
-            
+
             //TODO: Setup server variables (player list, etc.)
 
             PlayerStatus = PlayerStatus.PLAYING;
-            
+
             return true;
         }
 
@@ -132,7 +134,7 @@ namespace CS2M.Networking
             if (PlayerType == PlayerType.SERVER)
             {
                 //TODO: Clear server variables (player list, etc.)
-            } 
+            }
             else if (PlayerType == PlayerType.CLIENT)
             {
                 //TODO: Clean-Up client
@@ -191,6 +193,16 @@ namespace CS2M.Networking
         public void SendToApiServer(ApiCommandBase message)
         {
             _networkManager.SendToApiServer(message);
+        }
+
+        public void PlayerStatusChanged(PlayerStatus oldPlayerStatus, PlayerStatus newPlayerStatus)
+        {
+            Log.Trace($"LocalPlayer: changed player status from {oldPlayerStatus} to {newPlayerStatus}");
+        }
+
+        public void PlayerTypeChanged(PlayerType oldPlayerType, PlayerType newPlayerType)
+        {
+            Log.Trace($"LocalPlayer: changed player type from {oldPlayerType} to {newPlayerType}");
         }
     }
 }

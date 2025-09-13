@@ -1,4 +1,5 @@
 ﻿
+using CS2M.API;
 using CS2M.Networking;
 
 namespace CS2M.Commands.ApiServer.Handler
@@ -11,58 +12,48 @@ namespace CS2M.Commands.ApiServer.Handler
             bool automaticSuccess = false; //MultiplayerManager.Instance.CurrentServer.AutomaticSuccess; //TODO: Correct state
             string message;
             bool portOpen = false;
-            switch (command.State)
-            {
+            switch (command.State) {
                 case PortCheckResult.Unreachable:
-                    if (vpnIp != null)
-                    {
+                    if (vpnIp != null) {
                         message =
                             "Server is not reachable from the internet. Players can connect over Hamachi using the IP address " +
                             vpnIp;
                         portOpen = true; // This is an OK state
                     }
-                    else if (automaticSuccess)
-                    {
+                    else if (automaticSuccess) {
                         message =
                                 "It was tried to forward the port automatically, but the server is not reachable from the internet. Manual port forwarding is required. See the \"Manage Server\" menu for more info.";
                     }
-                    else
-                    {
+                    else {
                         message =
                             "Port could not be forwarded automatically and server is not reachable from the internet. Manual port forwarding is required. See the \"Manage Server\" menu for more info.";
                     }
                     break;
                 case PortCheckResult.Reachable:
                     portOpen = true;
-                    if (automaticSuccess)
-                    {
+                    if (automaticSuccess) {
                         message =
                             "Port was forwarded automatically and server is reachable from the internet!";
                     }
-                    else
-                    {
+                    else {
                         message = "Server is reachable from the internet!";
                     }
 
-                    if (vpnIp != null)
-                    {
+                    if (vpnIp != null) {
                         message += " Players can also connect over Hamachi, although you don't need it.";
                     }
                     break;
                 case PortCheckResult.Error:
-                    if (vpnIp != null)
-                    {
+                    if (vpnIp != null) {
                         message =
                             "Error while checking server port from the internet. Players should still be able to connect over the Hamachi IP address " +
                             vpnIp;
                     }
-                    else if (automaticSuccess)
-                    {
+                    else if (automaticSuccess) {
                         message = "Port was forwarded automatically, but couldn't be checked due to error: " +
                                   command.Message;
                     }
-                    else
-                    {
+                    else {
                         message = "Port could not be forwarded automatically, and couldn't be checked due to error: " +
                                   command.Message;
                     }
@@ -72,12 +63,10 @@ namespace CS2M.Commands.ApiServer.Handler
                     break;
             }
 
-            if (!portOpen)
-            {
+            if (!portOpen) {
                 Log.Warn(message);
             }
-            //TODO: Send chat Message
-            //Chat.Instance.PrintGameMessage(portOpen ? Chat.MessageType.Normal : Chat.MessageType.Warning, message);
+            Chat.Instance.PrintGameMessage(message);
 
             //TODO
             //PanelManager.GetPanel<ManageGamePanel>()?.SetPortState(command);

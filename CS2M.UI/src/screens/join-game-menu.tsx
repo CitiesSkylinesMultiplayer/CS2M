@@ -1,9 +1,10 @@
-import {getModule} from "cs2/modding";
-import {bindValue, trigger, useValue} from "cs2/api";
+import { getModule } from "cs2/modding";
+import { bindValue, trigger, useValue } from "cs2/api";
 import mod from "../../mod.json";
-import {FocusBoundary, NavigationScope} from "cs2/input";
-import {useLocalization} from "cs2/l10n";
-import {InputField} from "../util/input-field";
+import { FocusBoundary, NavigationScope } from "cs2/input";
+import { useLocalization } from "cs2/l10n";
+import { InputField } from "../util/input-field";
+import { setVal } from "api";
 
 export const joinMenuVisible = bindValue<boolean>(mod.id, 'JoinMenuVisible');
 export const modSupport = bindValue<Array<any>>(mod.id, 'modSupport');
@@ -15,10 +16,6 @@ export const joinGameEnabled = bindValue<boolean>(mod.id, 'JoinGameEnabled');
 
 export function hideJoinGame() {
     trigger(mod.id, "HideJoinGameMenu");
-}
-
-export function setVal(name: string, value: any) {
-    trigger(mod.id, name, value);
 }
 
 export function setIntVal(name: string, value: any) {
@@ -41,20 +38,18 @@ export const JoinGameSettings = () => {
     let usernameValue = useValue(username);
     let enabled = useValue(joinGameEnabled);
 
-    const { translate } = useLocalization();
-
-    const focusChange = () => {};
+    const focusChange = () => { };
     return (
         <FocusBoundary onFocusChange={focusChange}>
             <div className={GameOptionsCSS.mainRow}>
                 <div className={GameOptionsCSS.optionsColumn}>
-                    <NavigationScope focused={null} onChange={() => {}}>
+                    <NavigationScope focused={null} onChange={() => { }}>
                         <InputField label={"CS2M.UI.IPAddress"} value={ipAddressValue} disabled={!enabled}
-                                    onChange={(val: any) => {setVal("SetJoinIpAddress", val)}}></InputField>
+                            onChange={(val: any) => { setVal("SetJoinIpAddress", val) }}></InputField>
                         <InputField label={"CS2M.UI.Port"} value={portValue} disabled={!enabled}
-                                    onChange={(val : any) => {setIntVal("SetJoinPort", val)}}></InputField>
+                            onChange={(val: any) => { setIntVal("SetJoinPort", val) }}></InputField>
                         <InputField label={"CS2M.UI.Username"} value={usernameValue} disabled={!enabled}
-                                    onChange={(val: any) => {setVal("SetUsername", val)}}></InputField>
+                            onChange={(val: any) => { setVal("SetUsername", val) }}></InputField>
                     </NavigationScope>
                 </div>
                 <div className={GameOptionsCSS.infoColumn}>
@@ -76,8 +71,8 @@ export const JoinGameMenu = () => {
     const SaveListCSS = getModule('game-ui/menu/components/load-game-screen/save-list/save-list.module.scss', 'classes');
     const FooterButton = getModule('game-ui/menu/components/shared/detail-section/detail-section.tsx', 'FooterButton');
 
-    const visible : boolean = useValue(joinMenuVisible);
-    const modSupports  = useValue(modSupport);
+    const visible: boolean = useValue(joinMenuVisible);
+    const modSupports = useValue(modSupport);
     const enabled = useValue(joinGameEnabled);
 
     const { translate } = useLocalization();
@@ -108,7 +103,7 @@ export const JoinGameMenu = () => {
                     color = "orange";
                     break;
             }
-            details.push(<div style={{color: color}}><Field label={support.name}>{support_str}</Field></div>);
+            details.push(<div style={{ color: color }}><Field label={support.name}>{support_str}</Field></div>);
         }
     } else {
         detailsTitle = translate("CS2M.UI.JoiningGame");
@@ -117,7 +112,7 @@ export const JoinGameMenu = () => {
     let footer = <>
         <FooterButton disabled={!enabled} onSelect={hostGame}>{translate("CS2M.UI.HostGame")}</FooterButton>
         <FooterButton disabled={!enabled} onSelect={joinGame}>{translate("CS2M.UI.JoinGame")}</FooterButton>
-        </>;
+    </>;
 
     let content;
     if (visible) {
