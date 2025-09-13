@@ -29,4 +29,26 @@
       <ProjectReference Include="..\CS2M.API\CS2M.API.csproj" />
     </ItemGroup>
 
+    <ItemGroup>
+      <Reference Include="Colossal.Core">
+        <HintPath>..\..\..\..\games\steam\steamapps\common\Cities Skylines II\Cities2_Data\Managed\Colossal.Core.dll</HintPath>
+      </Reference>
+      <Reference Include="Colossal.PSI.Common">
+        <HintPath>..\..\..\..\games\steam\steamapps\common\Cities Skylines II\Cities2_Data\Managed\Colossal.PSI.Common.dll</HintPath>
+      </Reference>
+      <Reference Include="Unity.Collections">
+        <HintPath>..\..\..\..\games\steam\steamapps\common\Cities Skylines II\Cities2_Data\Managed\Unity.Collections.dll</HintPath>
+      </Reference>
+      <Reference Include="Unity.Entities">
+        <HintPath>..\..\..\..\games\steam\steamapps\common\Cities Skylines II\Cities2_Data\Managed\Unity.Entities.dll</HintPath>
+      </Reference>
+      <Reference Include="UnityEngine">
+        <HintPath>..\..\..\..\games\steam\steamapps\common\Cities Skylines II\Cities2_Data\Managed\UnityEngine.dll</HintPath>
+      </Reference>
+      <Reference Include="UnityEngine.CoreModule">
+        <HintPath>..\..\..\..\games\steam\steamapps\common\Cities Skylines II\Cities2_Data\Managed\UnityEngine.CoreModule.dll</HintPath>
+          <Aliases>UnityCore</Aliases>
+      </Reference>
+    </ItemGroup>
+
 </Project>
