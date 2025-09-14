@@ -27,7 +27,7 @@ namespace CS2M.Util
 
                 if (type.IsConstructedGenericType)
                 {
-                    foreach (var t in type.GenericTypeArguments) Add(t);
+                    foreach (Type t in type.GenericTypeArguments) Add(t);
                 }
 
                 if (type.IsArray)
@@ -39,21 +39,21 @@ namespace CS2M.Util
                 if (!assemblies.Contains(type.Assembly)) return;
 
                 result.Add(type);
-                var children =
+                IEnumerable<Type> children =
                     type.GetProperties()
                         .Where(p => !p.IsIndexed())
                         .Select(p => p.PropertyType)
                         .Distinct()
                         .Where(x => !x.IsEnum);
-                var derivations = type.GetSubTypes(assemblies);
+                IEnumerable<Type> derivations = type.GetSubTypes(assemblies);
 
-                foreach (var t in children.Concat(derivations))
+                foreach (Type t in children.Concat(derivations))
                 {
                     Add(t);
                 }
             }
 
-            foreach (var t in result)
+            foreach (Type t in result)
             {
                 if (t.IsAbstract) builder.AllSubTypesOf(t, assemblies);
                 else builder.AutoKeyed(t);
