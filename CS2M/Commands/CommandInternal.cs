@@ -1,17 +1,20 @@
-﻿using CS2M.API;
+﻿using System;
+using System.Collections.Concurrent;
+using System.Collections.Generic;
+using System.Linq;
+using System.Reflection;
+using CS2M.API;
 using CS2M.API.Commands;
 using CS2M.API.Networking;
 using CS2M.Helpers;
 using CS2M.Mods;
 using CS2M.Networking;
+using CS2M.Util;
 using MessagePack;
 using MessagePack.Attributeless;
 using MessagePack.Resolvers;
-using System;
-using System.Collections.Concurrent;
-using System.Collections.Generic;
-using System.Linq;
-using System.Reflection;
+using MessagePack.Unity;
+using MessagePack.Unity.Extension;
 
 namespace CS2M.Commands
 {
@@ -19,9 +22,15 @@ namespace CS2M.Commands
     {
         public static CommandInternal Instance;
 
-        private readonly ConcurrentDictionary<Type, CommandHandler> _cmdMapping = new ConcurrentDictionary<Type, CommandHandler>();
+        private readonly ConcurrentDictionary<Type, CommandHandler> _cmdMapping =
+            new ConcurrentDictionary<Type, CommandHandler>();
 
         private MessagePackSerializerOptions _model;
+
+        public CommandInternal()
+        {
+            Command.ConnectToCSM(SendToAll, SendToServer, SendToClients, GetCommandHandler);
+        }
 
         /// <summary>
         ///     This method is used to send a command to a connected client.
@@ -121,43 +130,46 @@ namespace CS2M.Commands
             _cmdMapping.Clear();
             try
             {
+                // Configure MessagePack resolver
+                IFormatterResolver resolver = CompositeResolver.Create(
+                    // enable extension packages first
+                    ColossalResolver.Instance,
+                    UnityBlitResolver.Instance,
+                    UnityResolver.Instance,
+                    StandardResolver.Instance
+                );
+                MessagePackSerializerOptionsBuilder options =
+                    MessagePackSerializerOptions.Standard.WithResolver(resolver).Configure();
                 // First, find all CSM classes, then the other mods. This is necessary to
                 // ensure that our management packets have always the same ids,
                 // as for example the ConnectionRequest and ConnectionResult commands are used
                 // to determine the installed mods.
-                IEnumerable<Type> packets = AssemblyHelper.FindClassesInCSM(typeof(CommandHandler));
+                List<Type> packets = AssemblyHelper.FindClassesInCSM(typeof(CommandHandler)).ToList();
+                var assemblies = new List<Assembly>
+                {
+                    typeof(CommandBase).Assembly,
+                    typeof(Mod).Assembly
+                };
                 foreach (ModConnection connection in ModSupport.Instance.ConnectedMods.OrderBy(mod => mod.Name))
                 {
-                    foreach (Assembly assembly in connection.CommandAssemblies.OrderBy(assembly => assembly.FullName))
-                    {
-                        packets = packets.Concat(AssemblyHelper.FindImplementationsInAssembly(assembly, typeof(CommandHandler)));
-                    }
+                    assemblies.AddRange(connection.CommandAssemblies);
+                    connection.CommandAssemblies.ForEach(input =>
+                        packets.AddRange(AssemblyHelper.FindImplementationsInAssembly(input, typeof(CommandHandler))));
                 }
 
-                Type[] handlers = packets.ToArray();
-                Log.Info($"Initializing data model with {handlers.Length} commands...");
+                options.BetterGraphOf(typeof(CommandBase), assemblies.ToArray());
 
-                // Configure MessagePack resolver
-                IFormatterResolver resolver = CompositeResolver.Create(
-                    // enable extension packages first
-                    MessagePack.Unity.Extension.UnityBlitResolver.Instance,
-                    MessagePack.Unity.UnityResolver.Instance,
-                    StandardResolver.Instance
-                );
-                var options = MessagePackSerializerOptions.Standard.WithResolver(resolver).Configure();
+                Log.Info($"Initializing data model with {packets.Count} commands...");
 
                 // Create instances of the handlers, initialize mappings and register command subclasses in the protobuf model
-                foreach (Type type in handlers)
+                foreach (Type type in packets)
                 {
-                    CommandHandler handler = (CommandHandler)Activator.CreateInstance(type);
+                    var handler = (CommandHandler)Activator.CreateInstance(type);
                     bool added = _cmdMapping.TryAdd(handler.GetDataType(), handler);
                     if (!added)
                     {
                         Log.Debug($"Handler for {handler.GetDataType()} already exists");
                     }
-
-                    // Add subtype to the MsgPack model with all attributes
-                    options.SubType(typeof(CommandBase), handler.GetDataType());
                 }
 
                 _model = options.Build();
@@ -166,11 +178,6 @@ namespace CS2M.Commands
             {
                 Log.Error("Failed to initialize data model", ex);
             }
-        }
-
-        public CommandInternal()
-        {
-            Command.ConnectToCSM(this.SendToAll, this.SendToServer, this.SendToClients, this.GetCommandHandler);
         }
     }
 }
