@@ -17,7 +17,7 @@
         GET_SERVER_INFO,
 
         /// <summary>
-        /// The client is trying to connect NAT punchthrough to coonect to the server
+        /// The client is trying to connect through NAT hole punching to the server
         /// </summary>
         NAT_CONNECT,
 
@@ -25,6 +25,16 @@
         /// The client is trying to connect directly to the server
         /// </summary>
         DIRECT_CONNECT,
+
+        /// <summary>
+        /// The client connected on network level, but has not joined the game
+        /// </summary>
+        CONNECTION_ESTABLISHED,
+
+        /// <summary>
+        /// The client fulfilled all preconditions and is waiting to join the game
+        /// </summary>
+        WAITING_TO_JOIN,
 
         /// <summary>
         /// The player is connected and downloading the map/save from
@@ -45,8 +55,8 @@
         PLAYING,
 
         /// <summary>
-        /// The player is blocked from interacting with the game
+        /// The players game is blocked, because a new player is joining or a resync is in progress
         /// </summary>
-        BLOCKED
+        BLOCKED,
     }
 }

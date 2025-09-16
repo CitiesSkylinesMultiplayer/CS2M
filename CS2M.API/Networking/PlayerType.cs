@@ -2,6 +2,7 @@
 {
     public enum PlayerType
     {
+        NONE,
         CLIENT,
         SERVER,
     }

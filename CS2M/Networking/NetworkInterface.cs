@@ -1,6 +1,9 @@
-﻿using CS2M.API.Commands;
+﻿using System.Collections.Generic;
+using System.Linq;
+using CS2M.API.Commands;
 using CS2M.API.Networking;
 using CS2M.Commands.ApiServer;
+using LiteNetLib;
 
 namespace CS2M.Networking
 {
@@ -8,9 +11,23 @@ namespace CS2M.Networking
     {
         private static NetworkInterface _instance;
 
-        public static NetworkInterface Instance => _instance ?? (_instance = new NetworkInterface());
+        public static NetworkInterface Instance => _instance ??= new NetworkInterface();
 
-        internal readonly LocalPlayer LocalPlayer = new LocalPlayer();
+        public event OnPlayerConnected PlayerConnectedEvent;
+        public event OnPlayerDisconnected PlayerDisconnectedEvent;
+        public event OnPlayerJoined PlayerJoinedEvent;
+        public event OnPlayerLeft PlayerLeftEvent;
+
+        public List<Player> PlayerListConnected = new List<Player>();
+        public List<Player> PlayerListJoined = new List<Player>();
+
+        public readonly LocalPlayer LocalPlayer = new LocalPlayer();
+
+        public NetworkInterface()
+        {
+            PlayerListConnected.Add(LocalPlayer);
+            PlayerListJoined.Add(LocalPlayer);
+        }
 
         public void OnUpdate()
         {
@@ -20,6 +37,11 @@ namespace CS2M.Networking
         public void Connect(ConnectionConfig connectionConfig)
         {
             LocalPlayer.GetServerInfo(connectionConfig);
+        }
+
+        public void UpdateLocalPlayerUsername(string username)
+        {
+            LocalPlayer.UpdateUsername(username);
         }
 
         public void StartServer(ConnectionConfig connectionConfig)
@@ -58,5 +80,44 @@ namespace CS2M.Networking
         {
             LocalPlayer.SendToClients(message);
         }
+
+        public RemotePlayer GetPlayerByPeer(NetPeer peer)
+        {
+            return PlayerListConnected
+                .Where(p => p is RemotePlayer)
+                .Cast<RemotePlayer>()
+                .FirstOrDefault(p => p.NetPeer.Id == peer.Id);
+        }
+
+        public bool IsPeerConnected(NetPeer peer)
+        {
+            return PlayerListConnected
+                .Where(p => p is RemotePlayer)
+                .Cast<RemotePlayer>()
+                .Any(p => p.NetPeer.Id == peer.Id);
+        }
+
+        public bool IsPeerJoined(NetPeer peer)
+        {
+            return PlayerListJoined
+                .Where(p => p is RemotePlayer)
+                .Cast<RemotePlayer>()
+                .Any(p => p.NetPeer.Id == peer.Id);
+        }
+
+        public void PlayerConnected(RemotePlayer player)
+        {
+            Log.Debug($"RemotePlayer '{player.Username}' connected.");
+            PlayerListConnected.Add(player);
+            PlayerConnectedEvent?.Invoke(player);
+        }
+
+        public delegate void OnPlayerConnected(Player player);
+
+        public delegate void OnPlayerDisconnected(Player player);
+
+        public delegate void OnPlayerJoined(Player player);
+
+        public delegate void OnPlayerLeft(Player player);
     }
 }

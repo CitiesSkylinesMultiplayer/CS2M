@@ -130,12 +130,14 @@ namespace CS2M.UI
 
         private void JoinGame()
         {
+            NetworkInterface.Instance.UpdateLocalPlayerUsername(_username.value);
             NetworkInterface.Instance.Connect(new ConnectionConfig(_joinIPAddress.value, _joinPort.value, ""));
             _joinGameEnabled.Update(false);
         }
 
         private void HostGame()
         {
+            NetworkInterface.Instance.UpdateLocalPlayerUsername(_username.value);
             NetworkInterface.Instance.StartServer(new ConnectionConfig(_joinPort.value));
             _hostGameEnabled.Update(false);
         }
