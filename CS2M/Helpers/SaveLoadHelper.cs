@@ -51,10 +51,9 @@ namespace CS2M.Helpers
         {
             if (_sliceWriteOffset > 0)
             {
-                var slice = new byte[_sliceWriteOffset];
+                byte[] slice = new byte[_sliceWriteOffset];
                 Array.Copy(_sliceBuffer, 0, slice, 0, _sliceWriteOffset);
                 _slices.Add(slice);
-                _streamLength += _sliceWriteOffset;
                 _sliceWriteOffset = 0;
             }
         }
@@ -79,7 +78,7 @@ namespace CS2M.Helpers
             // Flush any remaining write bytes
             Flush();
 
-            var readBytes = 0;
+            int readBytes = 0;
             while (readBytes < bytes)
             {
                 int id = _sliceReadOffset / SliceLength;
@@ -96,7 +95,7 @@ namespace CS2M.Helpers
                 fixed (byte* pSource = slice)
                 {
                     // Copy the specified number of bytes from source to target.
-                    for (var i = 0; i < toRead; i++)
+                    for (int i = 0; i < toRead; i++)
                     {
                         pTarget[readBytes + i] = pSource[offset + i];
                     }
@@ -116,6 +115,7 @@ namespace CS2M.Helpers
                 return;
             }
 
+            _streamLength += count;
             while (count > 0)
             {
                 int sliceRemain = _sliceBuffer.Length - _sliceWriteOffset;
@@ -131,8 +131,6 @@ namespace CS2M.Helpers
                     _sliceWriteOffset = 0;
                 }
             }
-
-            _streamLength += count;
         }
 
         public List<byte[]> GetSlices()

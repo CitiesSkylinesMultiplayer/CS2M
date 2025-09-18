@@ -20,6 +20,7 @@ namespace CS2M.UI
                 }
             }
 
+            Log.Warn($"UI Binding {group}::{name} not found");
             return null;
         }
     }

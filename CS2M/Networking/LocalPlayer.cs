@@ -1,12 +1,13 @@
-﻿using Colossal;
 ﻿using System.Collections.Generic;
+using Colossal;
 using CS2M.API.Commands;
 using CS2M.API.Networking;
 using CS2M.Commands;
 using CS2M.Commands.ApiServer;
-using CS2M.Helpers;
 using CS2M.Commands.Data.Internal;
+using CS2M.Helpers;
 using CS2M.Mods;
+using CS2M.UI;
 using CS2M.Util;
 using LiteNetLib;
 using Unity.Entities;
@@ -15,9 +16,10 @@ namespace CS2M.Networking
 {
     public class LocalPlayer : Player
     {
-        private readonly SlicedPacketStream _packetStream = new SlicedPacketStream();
+        private readonly SlicedPacketStream _packetStream = new();
         private readonly SaveLoadHelper _saveLoadHelper;
         private NetworkManager _networkManager;
+        private UISystem _uiSystem;
 
         public LocalPlayer()
         {
@@ -129,7 +131,7 @@ namespace CS2M.Networking
 
         public bool DownloadingMap()
         {
-            if (PlayerStatus != PlayerStatus.DIRECT_CONNECT)
+            if (PlayerStatus != PlayerStatus.WAITING_TO_JOIN)
             {
                 return false;
             }
@@ -138,6 +140,7 @@ namespace CS2M.Networking
             // Change state to downloading map, next step is to wait until all
             // map packets have been received by `SliceReceived` below.
             PlayerStatus = PlayerStatus.DOWNLOADING_MAP;
+            _uiSystem.SetLoadProgress(0, 0);
             return true;
         }
 
@@ -150,6 +153,8 @@ namespace CS2M.Networking
             }
 
             _packetStream.AppendSlice(cmd.WorldSlice);
+            _uiSystem.SetLoadProgress((int)_packetStream.Length, cmd.RemainingBytes);
+
             if (cmd.RemainingBytes == 0)
             {
                 LoadingMap();
@@ -240,6 +245,11 @@ namespace CS2M.Networking
 
         public void OnUpdate()
         {
+            if (_uiSystem == null)
+            {
+                _uiSystem = World.DefaultGameObjectInjectionWorld.GetOrCreateSystemManaged<UISystem>();
+            }
+
             if (PlayerStatus != PlayerStatus.INACTIVE)
             {
                 _networkManager.ProcessEvents();

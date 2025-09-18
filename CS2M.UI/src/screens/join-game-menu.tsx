@@ -1,10 +1,10 @@
-import { getModule } from "cs2/modding";
-import { bindValue, trigger, useValue } from "cs2/api";
+import {getModule} from "cs2/modding";
+import {bindValue, trigger, useValue} from "cs2/api";
 import mod from "../../mod.json";
-import { FocusBoundary, NavigationScope } from "cs2/input";
-import { useLocalization } from "cs2/l10n";
-import { InputField } from "../util/input-field";
-import { setVal } from "api";
+import {FocusBoundary, NavigationScope} from "cs2/input";
+import {LocalizedNumber, LocalizedPercentage, Unit, useLocalization} from "cs2/l10n";
+import {InputField} from "../util/input-field";
+import {setVal} from "api";
 
 export const joinMenuVisible = bindValue<boolean>(mod.id, 'JoinMenuVisible');
 export const modSupport = bindValue<Array<any>>(mod.id, 'modSupport');
@@ -13,6 +13,9 @@ export const ipAddress = bindValue<string>(mod.id, 'JoinIpAddress');
 export const port = bindValue<number>(mod.id, 'JoinPort');
 export const username = bindValue<string>(mod.id, 'Username');
 export const joinGameEnabled = bindValue<boolean>(mod.id, 'JoinGameEnabled');
+export const playerStatus = bindValue<string>(mod.id, 'PlayerStatus');
+export const downloadDone = bindValue<number>(mod.id, 'DownloadDone');
+export const downloadRemaining = bindValue<number>(mod.id, 'DownloadRemaining');
 
 export function hideJoinGame() {
     trigger(mod.id, "HideJoinGameMenu");
@@ -38,18 +41,26 @@ export const JoinGameSettings = () => {
     let usernameValue = useValue(username);
     let enabled = useValue(joinGameEnabled);
 
-    const focusChange = () => { };
+    const focusChange = () => {
+    };
     return (
         <FocusBoundary onFocusChange={focusChange}>
             <div className={GameOptionsCSS.mainRow}>
                 <div className={GameOptionsCSS.optionsColumn}>
-                    <NavigationScope focused={null} onChange={() => { }}>
+                    <NavigationScope focused={null} onChange={() => {
+                    }}>
                         <InputField label={"CS2M.UI.IPAddress"} value={ipAddressValue} disabled={!enabled}
-                            onChange={(val: any) => { setVal("SetJoinIpAddress", val) }}></InputField>
+                                    onChange={(val: any) => {
+                                        setVal("SetJoinIpAddress", val)
+                                    }}></InputField>
                         <InputField label={"CS2M.UI.Port"} value={portValue} disabled={!enabled}
-                            onChange={(val: any) => { setIntVal("SetJoinPort", val) }}></InputField>
+                                    onChange={(val: any) => {
+                                        setIntVal("SetJoinPort", val)
+                                    }}></InputField>
                         <InputField label={"CS2M.UI.Username"} value={usernameValue} disabled={!enabled}
-                            onChange={(val: any) => { setVal("SetUsername", val) }}></InputField>
+                                    onChange={(val: any) => {
+                                        setVal("SetUsername", val)
+                                    }}></InputField>
                     </NavigationScope>
                 </div>
                 <div className={GameOptionsCSS.infoColumn}>
@@ -71,11 +82,14 @@ export const JoinGameMenu = () => {
     const SaveListCSS = getModule('game-ui/menu/components/load-game-screen/save-list/save-list.module.scss', 'classes');
     const FooterButton = getModule('game-ui/menu/components/shared/detail-section/detail-section.tsx', 'FooterButton');
 
-    const visible: boolean = useValue(joinMenuVisible);
+    let visible: boolean = useValue(joinMenuVisible);
     const modSupports = useValue(modSupport);
     const enabled = useValue(joinGameEnabled);
+    const status = useValue(playerStatus);
+    const dlDone = useValue(downloadDone);
+    const dlRemaining = useValue(downloadRemaining);
 
-    const { translate } = useLocalization();
+    const {translate} = useLocalization();
 
     const actions = {};
 
@@ -103,14 +117,48 @@ export const JoinGameMenu = () => {
                     color = "orange";
                     break;
             }
-            details.push(<div style={{ color: color }}><Field label={support.name}>{support_str}</Field></div>);
+            details.push(<div style={{color: color}}><Field label={support.name}>{support_str}</Field></div>);
         }
     } else {
-        detailsTitle = translate("CS2M.UI.JoiningGame");
+        let status_str = translate("CS2M.UI.JoinStatus[" + status + "]", status);
+        if (status == "DOWNLOADING_MAP") {
+            let dlTotal = dlDone + dlRemaining;
+            let doneMib = dlDone / 1024 / 1024;
+            let totalMib = dlTotal / 1024 / 1024;
+
+            let dlValues;
+            if (dlTotal == 0) {
+                dlTotal = 100;
+            } else {
+                dlValues = <>
+                    <LocalizedNumber
+                        unit={Unit.FloatSingleFraction}
+                        signed={false}
+                        value={doneMib}
+                    />&nbsp;MiB
+                    &nbsp;/&nbsp;
+                    <LocalizedNumber
+                        unit={Unit.FloatSingleFraction}
+                        signed={false}
+                        value={totalMib}
+                    />&nbsp;MiB
+                </>;
+            }
+
+            let download_state = <>
+                {dlValues}&nbsp;(<LocalizedPercentage value={dlDone} max={dlTotal}/>)
+            </>;
+            detailsTitle = <>
+                <span style={{whiteSpace: "nowrap"}}>
+                    {status_str} {download_state}
+                </span>
+            </>;
+        } else {
+            detailsTitle = <>{status_str}</>;
+        }
     }
 
     let footer = <>
-        <FooterButton disabled={!enabled} onSelect={hostGame}>{translate("CS2M.UI.HostGame")}</FooterButton>
         <FooterButton disabled={!enabled} onSelect={joinGame}>{translate("CS2M.UI.JoinGame")}</FooterButton>
     </>;
 
@@ -127,7 +175,8 @@ export const JoinGameMenu = () => {
                                     <JoinGameSettings></JoinGameSettings>
                                 </div>
                             </div>
-                            <DetailSection title={detailsTitle} className={LoadGameScreenCSS.detail} content={details} footer={footer}>
+                            <DetailSection title={detailsTitle} className={LoadGameScreenCSS.detail} content={details}
+                                           footer={footer}>
                             </DetailSection>
                         </AutoNavigationScope>
                     </div>
