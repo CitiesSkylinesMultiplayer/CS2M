@@ -34,5 +34,18 @@ namespace CS2M.Networking
         {
             Log.ErrorWithStackTrace($"RemotePlayer: {Username} ({PlayerId}) Player type for remote player shouldn't be changed after initialization");
         }
+
+        public void HandleConnect()
+        {
+        }
+
+        public void Disconnect()
+        {
+            NetPeer.Disconnect();
+        }
+
+        public void HandleDisconnect()
+        {
+        }
     }
 }
