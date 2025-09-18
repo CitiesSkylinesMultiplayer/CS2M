@@ -25,28 +25,13 @@ namespace CS2M.Commands.Handler.Internal
         {
             Log.Debug($"Received Preconditions Check [PeerId: {peer.Id}]");
 
-            // Check to see if the game versions match
-            if (!VersionUtil.GetGameVersion().Equals(command.GameVersion))
-            {
-                Log.Debug($"Preconditions Check [PeerId: {peer.Id}] game versions don't match LOCAL: {VersionUtil.GetGameVersion()} REMOTE: {command.GameVersion}");
-                //TODO: Send result
-                return;
-            }
-
-            // Check to see if the mod version matches
-            if (!VersionUtil.GetModVersion().Equals(command.ModVersion))
-            {
-                Log.Debug($"Preconditions Check [PeerId: {peer.Id}] mod versions don't match LOCAL: {VersionUtil.GetModVersion()} REMOTE: {command.ModVersion}");
-                //TODO: Send result
-                return;
-            }
+            PreconditionsUtil.Result result = PreconditionsUtil.CheckPreconditions(command);
 
             // Check the client username to see if anyone on the server already have a username
             if (NetworkInterface.Instance.PlayerListConnected.Any(p => p.Username.Equals(command.Username)))
             {
-                Log.Debug($"Preconditions Check [PeerId: {peer.Id}] username '{command.Username}' is already connected.");
-                //TODO: Send result
-                return;
+                Log.Debug($"[Preconditions Check] Username '{command.Username}' is already connected.");
+                result.Errors |= PreconditionsUtil.Errors.USERNAME_NOT_AVAILABLE;
             }
 
             // Check the password to see if it matches (only if the server has provided a password).
@@ -54,34 +39,29 @@ namespace CS2M.Commands.Handler.Internal
             {
                 if (!NetworkInterface.Instance.LocalPlayer.GetConnectionPassword().Equals(command.Password))
                 {
-                    Log.Debug($"Preconditions Check [PeerId: {peer.Id}] password '{command.Password}' is not correct.");
-                    //TODO: Send result
-                    return;
+                    Log.Debug($"[Preconditions Check] Password '{command.Password}' is not correct.");
+                    result.Errors |= PreconditionsUtil.Errors.PASSWORD_INCORRECT;
                 }
             }
 
-            // Check both clients have the same DLCs enabled
-            if (!new List<int>().All(command.DlcIds.Contains))
+            if (result.Errors == PreconditionsUtil.Errors.NONE)
             {
-                Log.Debug($"Preconditions Check [PeerId: {peer.Id}] dlcs don't match.");
-                Log.Debug($"Preconditions Check [PeerId: {peer.Id}] client dlcs: {string.Join(", ", command.DlcIds)}");
-                //Log.Debug($"Preconditions Check [Peer: {peer.Id}] server dlcs: {string.Join(", ", )}");
-                //TODO: Send result
-                return;
-            }
+                NetworkInterface.Instance.LocalPlayer.SendToClient(peer, new PreconditionsSuccessCommand());
 
-            // Check both clients have the same Mods enabled
-            if (!ModSupport.Instance.RequiredModsForSync.All(command.Mods.Contains))
+                // Add the new player as a connected player
+                NetworkInterface.Instance.PlayerConnected(new RemotePlayer(peer, command.Username, PlayerType.CLIENT));
+            }
+            else
             {
-                Log.Debug($"Preconditions Check [PeerId: {peer.Id}] mods don't match.");
-                Log.Debug($"Preconditions Check [PeerId: {peer.Id}] client mods: {string.Join(", ", command.Mods)}");
-                Log.Debug($"Preconditions Check [PeerId: {peer.Id}] server mods: {string.Join(", ", ModSupport.Instance.RequiredModsForSync)}");
-                //TODO: Send result
-                return;
+                NetworkInterface.Instance.LocalPlayer.SendToClient(peer, new PreconditionsErrorCommand()
+                {
+                    Errors = result.Errors,
+                    ModVersion = VersionUtil.GetModVersion(),
+                    GameVersion = VersionUtil.GetGameVersion(),
+                    Mods = ModSupport.Instance.RequiredModsForSync,
+                    DlcIds = new List<int>(), //TODO: Update with correct DLC List
+                });
             }
-
-            // Add the new player as a connected player
-            NetworkInterface.Instance.PlayerConnected(new RemotePlayer(peer, command.Username, PlayerType.CLIENT));
         }
     }
 }

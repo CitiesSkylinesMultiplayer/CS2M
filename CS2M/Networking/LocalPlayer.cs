@@ -1,5 +1,4 @@
 ﻿using System.Collections.Generic;
-using Colossal.PSI.Common;
 using CS2M.API.Commands;
 using CS2M.API.Networking;
 using CS2M.Commands.ApiServer;
@@ -101,7 +100,7 @@ namespace CS2M.Networking
                 ModVersion = VersionUtil.GetModVersion(),
                 GameVersion = VersionUtil.GetGameVersion(),
                 Mods = ModSupport.Instance.RequiredModsForSync,
-                DlcIds = new List<int>(),
+                DlcIds = new List<int>(), //TODO: Update with correct DLC List
             });
 
             PlayerStatus = PlayerStatus.CONNECTION_ESTABLISHED;
