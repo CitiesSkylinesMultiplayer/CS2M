@@ -13,12 +13,30 @@ namespace CS2M.Networking
 
         public static NetworkInterface Instance => _instance ??= new NetworkInterface();
 
+        /// <summary>
+        /// Event is triggered, when a player is connected on the network level
+        /// </summary>
         public event OnPlayerConnected PlayerConnectedEvent;
+        /// <summary>
+        /// Event is triggered, when a player disconnects on the network level
+        /// </summary>
         public event OnPlayerDisconnected PlayerDisconnectedEvent;
+        /// <summary>
+        /// Event is triggered, when a player joins on the game level
+        /// </summary>
         public event OnPlayerJoined PlayerJoinedEvent;
+        /// <summary>
+        /// Event is triggered, when a player leaves on the game level
+        /// </summary>
         public event OnPlayerLeft PlayerLeftEvent;
 
+        /// <summary>
+        /// List of all players, which are connected on network level
+        /// </summary>
         public List<Player> PlayerListConnected = new List<Player>();
+        /// <summary>
+        /// List of all players, which are connected on game level
+        /// </summary>
         public List<Player> PlayerListJoined = new List<Player>();
 
         public readonly LocalPlayer LocalPlayer = new LocalPlayer();

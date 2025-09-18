@@ -96,7 +96,7 @@ namespace CS2M.Networking
             SendToServer(new PreconditionsCheckCommand
             {
                 Username = Username,
-                Password = _networkManager.GetConnectionPassword(),
+                Password = GetConnectionPassword(),
                 ModVersion = VersionUtil.GetModVersion(),
                 GameVersion = VersionUtil.GetGameVersion(),
                 Mods = ModSupport.Instance.RequiredModsForSync,
@@ -207,7 +207,7 @@ namespace CS2M.Networking
 
         public void UpdatePlayerType(PlayerType playerType)
         {
-            
+            PlayerType = playerType;
         }
 
         public string GetConnectionPassword()

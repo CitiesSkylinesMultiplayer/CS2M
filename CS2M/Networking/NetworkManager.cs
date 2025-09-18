@@ -212,7 +212,7 @@ namespace CS2M.Networking
                 return;
             }
             
-            //TODO: Check that only the relevant command cloud be sent in connected, not joined state
+            //TODO: Check that only the relevant command could be sent in connected, not joined state
 
             handler.Parse(command);
         }
