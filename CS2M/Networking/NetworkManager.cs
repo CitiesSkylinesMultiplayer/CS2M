@@ -6,8 +6,11 @@ using CS2M.Commands.ApiServer;
 using CS2M.Util;
 using LiteNetLib;
 using System;
+using System.Linq;
 using System.Net;
 using System.Net.Sockets;
+using CS2M.Commands.Data.Internal;
+using CS2M.Commands.Handler.Internal;
 using Timer = System.Timers.Timer;
 
 namespace CS2M.Networking
@@ -187,10 +190,31 @@ namespace CS2M.Networking
             return true;
         }
 
+        public string GetConnectionPassword()
+        {
+            return _connectionConfig.Password;
+        }
+
         private void ListenerOnNetworkReceiveEvent(NetPeer peer, NetPacketReader reader, byte channel, DeliveryMethod deliveryMethod)
         {
-            Log.Trace($"NetworkManager: OnNetworkReceiveEvent [PeerId: {peer.Id}]");
-            // TODO: Process received data
+            CommandBase command = CommandInternal.Instance.Deserialize(reader.GetRemainingBytes());
+            CommandHandler handler = CommandInternal.Instance.GetCommandHandler(command.GetType());
+            Log.Trace($"NetworkManager: OnNetworkReceiveEvent [PeerId: {peer.Id}] {command.GetType()}");
+            if (command is PreconditionsCheckCommand)
+            {
+                ((PreconditionsCheckHandler) handler).HandleOnServer((PreconditionsCheckCommand) command, peer);
+                return;
+            }
+
+            if (NetworkInterface.Instance.LocalPlayer.PlayerType == PlayerType.SERVER &&
+                !NetworkInterface.Instance.IsPeerConnected(peer))
+            {
+                return;
+            }
+            
+            //TODO: Check that only the relevant command could be sent in connected, not joined state
+
+            handler.Parse(command);
         }
 
         private void ListenerOnPeerConnectedEvent(NetPeer peer)
@@ -203,7 +227,20 @@ namespace CS2M.Networking
             }
             else if (NetworkInterface.Instance.LocalPlayer.PlayerType == PlayerType.SERVER)
             {
-                // TODO: Handle peer connect on server
+                _timeout = new Timer
+                {
+                    Interval = 5000,
+                    AutoReset = false
+                };
+                _timeout.Elapsed += (sender, args) =>
+                {
+                    if (NetworkInterface.Instance.GetPlayerByPeer(peer) == null)
+                    {
+                        Log.Warn($"Client peer {peer.Id} did not register within {_timeout.Interval / 1000} seconds. Disconnecting peer.");
+                        peer.Disconnect();
+                    }
+                };
+                _timeout.Start();
             }
         }
 
@@ -217,6 +254,7 @@ namespace CS2M.Networking
             }
             else if (NetworkInterface.Instance.LocalPlayer.PlayerType == PlayerType.SERVER)
             {
+                NetworkInterface.Instance.GetPlayerByPeer(peer)?.HandleDisconnect();
                 // TODO: Handle peer disconnect on server
             }
         }

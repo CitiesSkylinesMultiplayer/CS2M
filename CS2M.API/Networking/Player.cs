@@ -24,7 +24,7 @@
             }
         }
 
-        private PlayerType _playerType;
+        private PlayerType _playerType = PlayerType.NONE;
         public PlayerType PlayerType
         {
             get => _playerType;
