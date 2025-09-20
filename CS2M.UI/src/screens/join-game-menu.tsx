@@ -2,7 +2,7 @@ import {getModule} from "cs2/modding";
 import {bindValue, trigger, useValue} from "cs2/api";
 import mod from "../../mod.json";
 import {FocusBoundary, NavigationScope} from "cs2/input";
-import {LocalizedNumber, LocalizedPercentage, Unit, useLocalization} from "cs2/l10n";
+import {LocalizedNumber, LocalizedPercentage, LocalizedString, Unit, useLocalization} from "cs2/l10n";
 import {InputField} from "../util/input-field";
 import {setVal} from "api";
 
@@ -12,10 +12,10 @@ export const modSupport = bindValue<Array<any>>(mod.id, 'modSupport');
 export const ipAddress = bindValue<string>(mod.id, 'JoinIpAddress');
 export const port = bindValue<number>(mod.id, 'JoinPort');
 export const username = bindValue<string>(mod.id, 'Username');
-export const joinGameEnabled = bindValue<boolean>(mod.id, 'JoinGameEnabled');
 export const playerStatus = bindValue<string>(mod.id, 'PlayerStatus');
 export const downloadDone = bindValue<number>(mod.id, 'DownloadDone');
 export const downloadRemaining = bindValue<number>(mod.id, 'DownloadRemaining');
+export const joinErrorMessage = bindValue<Array<string>>(mod.id, 'JoinErrorMessage');
 
 export function hideJoinGame() {
     trigger(mod.id, "HideJoinGameMenu");
@@ -29,17 +29,47 @@ export function joinGame() {
     trigger(mod.id, "JoinGame");
 }
 
-export function hostGame() {
-    trigger(mod.id, "HostGame");
-}
-
 export const JoinGameSettings = () => {
     const GameOptionsCSS = getModule('game-ui/menu/components/shared/game-options/game-options.module.scss', 'classes');
 
-    let ipAddressValue = useValue(ipAddress);
-    let portValue = useValue(port);
-    let usernameValue = useValue(username);
-    let enabled = useValue(joinGameEnabled);
+    const ipAddressValue = useValue(ipAddress);
+    const portValue = useValue(port);
+    const usernameValue = useValue(username);
+    const status = useValue(playerStatus);
+    const errMsg = useValue(joinErrorMessage);
+
+    const enabled = status == "INACTIVE";
+
+    let messages = <></>;
+    if (errMsg.length > 0) {
+        messages = <LocalizedString id={"CS2M.UI.JoinError.Intro"}/>;
+    }
+    for (let i = 0; i < errMsg.length; i++) {
+        let err = errMsg[i];
+        let message;
+        if (err.startsWith("precondition:")) {
+            err = err.substring(12);
+            switch (err) {
+                case "GAME_VERSION_MISMATCH":
+                case "MOD_VERSION_MISMATCH":
+                case "DLCS_MISMATCH":
+                case "MODS_MISMATCH": {
+                    const err_id = "CS2M.UI.JoinError." + err;
+                    message = <LocalizedString id={err_id} args={{SERVER: errMsg[++i], CLIENT: errMsg[++i]}}/>;
+                    break;
+                }
+                case "USERNAME_NOT_AVAILABLE":
+                case "PASSWORD_INCORRECT": {
+                    const err_id = "CS2M.UI.JoinError." + err;
+                    message = <LocalizedString id={err_id}/>;
+                    break;
+                }
+            }
+        } else {
+            message = <LocalizedString id={err}/>;
+        }
+        messages = <>{messages}{message}<br/></>
+    }
 
     const focusChange = () => {
     };
@@ -64,7 +94,7 @@ export const JoinGameSettings = () => {
                     </NavigationScope>
                 </div>
                 <div className={GameOptionsCSS.infoColumn}>
-
+                    {messages}
                 </div>
             </div>
         </FocusBoundary>
@@ -84,10 +114,11 @@ export const JoinGameMenu = () => {
 
     let visible: boolean = useValue(joinMenuVisible);
     const modSupports = useValue(modSupport);
-    const enabled = useValue(joinGameEnabled);
     const status = useValue(playerStatus);
     const dlDone = useValue(downloadDone);
     const dlRemaining = useValue(downloadRemaining);
+
+    let enabled = status == "INACTIVE";
 
     const {translate} = useLocalization();
 

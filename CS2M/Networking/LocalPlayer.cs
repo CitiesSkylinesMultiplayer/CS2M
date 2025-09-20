@@ -1,4 +1,6 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
 using Colossal;
 using CS2M.API.Commands;
 using CS2M.API.Networking;
@@ -34,23 +36,24 @@ namespace CS2M.Networking
             {
                 return false;
             }
-            // Check if is in main menu
 
             _networkManager = new NetworkManager();
 
             _networkManager.NatHolePunchSuccessfulEvent += NatConnect;
             _networkManager.NatHolePunchFailedEvent += DirectConnect;
             _networkManager.ClientConnectSuccessfulEvent += ConnectionEstablished;
-            _networkManager.ClientConnectFailedEvent += Inactive;
+            _networkManager.ClientConnectFailedEvent += ConnectionFailed;
             _networkManager.ClientDisconnectEvent += Inactive;
 
             if (!_networkManager.InitConnect(connectionConfig))
             {
+                _uiSystem.SetJoinErrors("CS2M.UI.JoinError.ClientFailed");
                 return false;
             }
 
             if (!_networkManager.SetupNatConnect())
             {
+                _uiSystem.SetJoinErrors("CS2M.UI.JoinError.InvalidIP");
                 return false;
             }
 
@@ -68,6 +71,7 @@ namespace CS2M.Networking
 
             if (!_networkManager.Connect())
             {
+                _uiSystem.SetJoinErrors("CS2M.UI.JoinError.FailedToConnect");
                 Inactive();
                 return false;
             }
@@ -86,11 +90,19 @@ namespace CS2M.Networking
 
             if (!_networkManager.Connect())
             {
+                _uiSystem.SetJoinErrors("CS2M.UI.JoinError.FailedToConnect");
                 Inactive();
                 return false;
             }
 
             PlayerStatus = PlayerStatus.DIRECT_CONNECT;
+            return true;
+        }
+
+        public bool ConnectionFailed()
+        {
+            _uiSystem.SetJoinErrors("CS2M.UI.JoinError.FailedToConnect");
+            Inactive();
             return true;
         }
 
@@ -114,6 +126,58 @@ namespace CS2M.Networking
 
             PlayerStatus = PlayerStatus.CONNECTION_ESTABLISHED;
             return true;
+        }
+
+        public void PreconditionsError(PreconditionsErrorCommand command)
+        {
+            Inactive();
+            var errors = new List<string>();
+            PreconditionsUtil.Errors err = command.Errors;
+            if (err.HasFlag(PreconditionsUtil.Errors.GAME_VERSION_MISMATCH))
+            {
+                errors.Add("precondition:GAME_VERSION_MISMATCH");
+                errors.Add(command.GameVersion.ToString());
+                errors.Add(VersionUtil.GetGameVersion().ToString());
+            }
+
+            if (err.HasFlag(PreconditionsUtil.Errors.MOD_VERSION_MISMATCH))
+            {
+                errors.Add("precondition:MOD_VERSION_MISMATCH");
+                errors.Add(command.ModVersion.ToString());
+                errors.Add(VersionUtil.GetModVersion().ToString());
+            }
+
+            if (err.HasFlag(PreconditionsUtil.Errors.USERNAME_NOT_AVAILABLE))
+            {
+                errors.Add("precondition:USERNAME_NOT_AVAILABLE");
+            }
+
+            if (err.HasFlag(PreconditionsUtil.Errors.PASSWORD_INCORRECT))
+            {
+                errors.Add("precondition:PASSWORD_INCORRECT");
+            }
+
+            if (err.HasFlag(PreconditionsUtil.Errors.DLCS_MISMATCH))
+            {
+                errors.Add("precondition:DLCS_MISMATCH");
+                errors.Add(""); // TODO: Client missing DLCs
+                errors.Add(""); // TODO: Server missing DLCs
+            }
+
+            if (err.HasFlag(PreconditionsUtil.Errors.MODS_MISMATCH))
+            {
+                List<string> clientMods = ModSupport.Instance.RequiredModsForSync;
+                List<string> serverMods = command.Mods;
+
+                IEnumerable<string> clientNotServer = clientMods.Where(mod => !serverMods.Contains(mod));
+                IEnumerable<string> serverNotClient = serverMods.Where(mod => !clientMods.Contains(mod));
+
+                errors.Add("precondition:MODS_MISMATCH");
+                errors.Add(string.Join(", ", serverNotClient));
+                errors.Add(string.Join(", ", clientNotServer));
+            }
+
+            _uiSystem.SetJoinErrors(errors.ToArray());
         }
 
         public bool WaitingToJoin()
@@ -248,6 +312,17 @@ namespace CS2M.Networking
             if (_uiSystem == null)
             {
                 _uiSystem = World.DefaultGameObjectInjectionWorld.GetOrCreateSystemManaged<UISystem>();
+                PreconditionsError(new PreconditionsErrorCommand
+                {
+                    ModVersion = new System.Version(1, 2),
+                    GameVersion = new Colossal.Version(1, 2, 3),
+                    Mods = new List<string> { "test", "test123" },
+                    DlcIds = null,
+                    Errors = PreconditionsUtil.Errors.GAME_VERSION_MISMATCH |
+                             PreconditionsUtil.Errors.MOD_VERSION_MISMATCH | PreconditionsUtil.Errors.MODS_MISMATCH |
+                             PreconditionsUtil.Errors.PASSWORD_INCORRECT |
+                             PreconditionsUtil.Errors.USERNAME_NOT_AVAILABLE
+                });
             }
 
             if (PlayerStatus != PlayerStatus.INACTIVE)

@@ -83,6 +83,11 @@ namespace CS2M.Networking
             LocalPlayer.Playing(connectionConfig);
         }
 
+        public void StopServer()
+        {
+            LocalPlayer.Inactive();
+        }
+
         public void SendToAll(CommandBase message)
         {
             LocalPlayer.SendToAll(message);

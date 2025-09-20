@@ -1,6 +1,7 @@
 using System.Collections.Generic;
 using Colossal.Serialization.Entities;
 using Colossal.UI.Binding;
+using CS2M.API.Networking;
 using CS2M.Mods;
 using CS2M.Networking;
 using Game;
@@ -17,14 +18,13 @@ namespace CS2M.UI
         private ValueBinding<int> _downloadRemaining;
 
         private GameMode _gameMode = GameMode.Other;
-        private ValueBinding<bool> _hostGameEnabled;
         private ValueBinding<bool> _hostMenuVisible;
         private ValueBinding<int> _hostPort;
-        private ValueBinding<bool> _joinGameEnabled;
 
         private ValueBinding<string> _joinIPAddress;
         private ValueBinding<bool> _joinMenuVisible;
         private ValueBinding<int> _joinPort;
+        private ValueBinding<string[]> _joinErrorMessage;
 
         private ValueBinding<List<ModSupportStatus>> _modSupportStatus;
         private ValueBinding<string> _playerStatus;
@@ -61,6 +61,7 @@ namespace CS2M.UI
 
             AddBinding(new TriggerBinding(Mod.Name, "JoinGame", JoinGame));
             AddBinding(new TriggerBinding(Mod.Name, "HostGame", HostGame));
+            AddBinding(new TriggerBinding(Mod.Name, "StopServer", StopServer));
 
             AddBinding(_joinMenuVisible = new ValueBinding<bool>(Mod.Name, "JoinMenuVisible", false));
             AddBinding(_hostMenuVisible = new ValueBinding<bool>(Mod.Name, "HostMenuVisible", false));
@@ -71,18 +72,21 @@ namespace CS2M.UI
             AddBinding(_joinPort = new ValueBinding<int>(Mod.Name, "JoinPort", 0));
             AddBinding(_hostPort = new ValueBinding<int>(Mod.Name, "HostPort", 0));
             AddBinding(_username = new ValueBinding<string>(Mod.Name, "Username", ""));
-            AddBinding(_joinGameEnabled = new ValueBinding<bool>(Mod.Name, "JoinGameEnabled", true));
-            AddBinding(_hostGameEnabled = new ValueBinding<bool>(Mod.Name, "HostGameEnabled", true));
 
             AddBinding(_playerStatus = new ValueBinding<string>(Mod.Name, "PlayerStatus", ""));
             AddBinding(_downloadDone = new ValueBinding<int>(Mod.Name, "DownloadDone", 0));
             AddBinding(_downloadRemaining = new ValueBinding<int>(Mod.Name, "DownloadRemaining", 0));
+            AddBinding(_joinErrorMessage = new ValueBinding<string[]>(Mod.Name, "JoinErrorMessage", null));
 
             RegisterChatPanelBindings();
 
             NetworkInterface.Instance.LocalPlayer.PlayerStatusChangedEvent += (old, status) =>
             {
                 _playerStatus.Update(status.ToString());
+                if (status == PlayerStatus.LOADING_MAP)
+                {
+                    _joinMenuVisible.Update(false);
+                }
             };
         }
 
@@ -124,14 +128,17 @@ namespace CS2M.UI
         {
             NetworkInterface.Instance.UpdateLocalPlayerUsername(_username.value);
             NetworkInterface.Instance.Connect(new ConnectionConfig(_joinIPAddress.value, _joinPort.value, ""));
-            _joinGameEnabled.Update(false);
         }
 
         private void HostGame()
         {
             NetworkInterface.Instance.UpdateLocalPlayerUsername(_username.value);
             NetworkInterface.Instance.StartServer(new ConnectionConfig(_hostPort.value));
-            _hostGameEnabled.Update(false);
+        }
+
+        private void StopServer()
+        {
+            NetworkInterface.Instance.StopServer();
         }
 
         protected override void OnGameLoadingComplete(Purpose purpose, GameMode mode)
@@ -153,6 +160,11 @@ namespace CS2M.UI
         {
             _downloadDone.Update(downloadDone);
             _downloadRemaining.Update(downloadRemaining);
+        }
+
+        public void SetJoinErrors(params string[] errorMessageKey)
+        {
+            _joinErrorMessage.Update(errorMessageKey);
         }
     }
 }

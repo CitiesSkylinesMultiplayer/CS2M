@@ -71,7 +71,6 @@ namespace CS2M.Networking
             if (!result)
             {
                 Log.Error("The client failed to start.");
-                //ConnectionMessage = "Client failed to start.";
                 return false;
             }
 
@@ -92,7 +91,6 @@ namespace CS2M.Networking
                 }
                 catch
                 {
-                    //ConnectionMessage = "Invalid server IP";
                     return false;
                 }
             }
@@ -196,14 +194,15 @@ namespace CS2M.Networking
             return _connectionConfig.Password;
         }
 
-        private void ListenerOnNetworkReceiveEvent(NetPeer peer, NetPacketReader reader, byte channel, DeliveryMethod deliveryMethod)
+        private void ListenerOnNetworkReceiveEvent(NetPeer peer, NetPacketReader reader, byte channel,
+            DeliveryMethod deliveryMethod)
         {
             CommandBase command = CommandInternal.Instance.Deserialize(reader.GetRemainingBytes());
             CommandHandler handler = CommandInternal.Instance.GetCommandHandler(command.GetType());
             Log.Trace($"NetworkManager: OnNetworkReceiveEvent [PeerId: {peer.Id}] {command.GetType()}");
             if (command is PreconditionsCheckCommand)
             {
-                ((PreconditionsCheckHandler) handler).HandleOnServer((PreconditionsCheckCommand) command, peer);
+                ((PreconditionsCheckHandler)handler).HandleOnServer((PreconditionsCheckCommand)command, peer);
                 return;
             }
 
@@ -212,7 +211,7 @@ namespace CS2M.Networking
             {
                 return;
             }
-            
+
             //TODO: Check that only the relevant command could be sent in connected, not joined state
 
             handler.Parse(command);
@@ -237,7 +236,8 @@ namespace CS2M.Networking
                 {
                     if (NetworkInterface.Instance.GetPlayerByPeer(peer) == null)
                     {
-                        Log.Warn($"Client peer {peer.Id} did not register within {_timeout.Interval / 1000} seconds. Disconnecting peer.");
+                        Log.Warn(
+                            $"Client peer {peer.Id} did not register within {_timeout.Interval / 1000} seconds. Disconnecting peer.");
                         peer.Disconnect();
                     }
                 };
