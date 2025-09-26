@@ -300,7 +300,7 @@ namespace CS2M.Networking
                 //TODO: Clean-Up client
             }
 
-            _networkManager.Stop();
+            _networkManager?.Stop();
 
             PlayerStatus = PlayerStatus.INACTIVE;
             PlayerType = PlayerType.NONE;
@@ -312,17 +312,6 @@ namespace CS2M.Networking
             if (_uiSystem == null)
             {
                 _uiSystem = World.DefaultGameObjectInjectionWorld.GetOrCreateSystemManaged<UISystem>();
-                PreconditionsError(new PreconditionsErrorCommand
-                {
-                    ModVersion = new System.Version(1, 2),
-                    GameVersion = new Colossal.Version(1, 2, 3),
-                    Mods = new List<string> { "test", "test123" },
-                    DlcIds = null,
-                    Errors = PreconditionsUtil.Errors.GAME_VERSION_MISMATCH |
-                             PreconditionsUtil.Errors.MOD_VERSION_MISMATCH | PreconditionsUtil.Errors.MODS_MISMATCH |
-                             PreconditionsUtil.Errors.PASSWORD_INCORRECT |
-                             PreconditionsUtil.Errors.USERNAME_NOT_AVAILABLE
-                });
             }
 
             if (PlayerStatus != PlayerStatus.INACTIVE)

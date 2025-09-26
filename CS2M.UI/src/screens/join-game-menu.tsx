@@ -42,20 +42,34 @@ export const JoinGameSettings = () => {
 
     let messages = <></>;
     if (errMsg.length > 0) {
-        messages = <LocalizedString id={"CS2M.UI.JoinError.Intro"}/>;
+        messages = <span style={{color: "#ff8080"}}><LocalizedString id={"CS2M.UI.JoinError.Intro"}/></span>;
     }
     for (let i = 0; i < errMsg.length; i++) {
         let err = errMsg[i];
         let message;
         if (err.startsWith("precondition:")) {
-            err = err.substring(12);
+            err = err.substring(13);
             switch (err) {
                 case "GAME_VERSION_MISMATCH":
-                case "MOD_VERSION_MISMATCH":
+                case "MOD_VERSION_MISMATCH": {
+                    const err_id = "CS2M.UI.JoinError." + err;
+                    message = <LocalizedString id={err_id} args={{SERVER: errMsg[++i], CLIENT: errMsg[++i]}}/>;
+                    break;
+                }
                 case "DLCS_MISMATCH":
                 case "MODS_MISMATCH": {
                     const err_id = "CS2M.UI.JoinError." + err;
-                    message = <LocalizedString id={err_id} args={{SERVER: errMsg[++i], CLIENT: errMsg[++i]}}/>;
+                    message = <LocalizedString id={err_id}/>;
+                    const serverList = errMsg[++i];
+                    const clientList = errMsg[++i];
+                    if (serverList != '') {
+                        const err_id = "CS2M.UI.JoinError." + err + ".server";
+                        message = <>{message}<LocalizedString id={err_id} args={{SERVER: serverList}}/></>;
+                    }
+                    if (clientList != '') {
+                        const err_id = "CS2M.UI.JoinError." + err + ".client";
+                        message = <>{message}<LocalizedString id={err_id} args={{CLIENT: clientList}}/></>;
+                    }
                     break;
                 }
                 case "USERNAME_NOT_AVAILABLE":
@@ -68,7 +82,7 @@ export const JoinGameSettings = () => {
         } else {
             message = <LocalizedString id={err}/>;
         }
-        messages = <>{messages}{message}<br/></>
+        messages = <>{messages}<br/>{message}</>;
     }
 
     const focusChange = () => {
@@ -120,18 +134,16 @@ export const JoinGameMenu = () => {
 
     let enabled = status == "INACTIVE";
 
-    const {translate} = useLocalization();
-
     const actions = {};
 
     let details = [];
     let detailsTitle;
     if (enabled) {
-        detailsTitle = translate("CS2M.UI.Compatibility");
+        detailsTitle = <LocalizedString id={"CS2M.UI.Compatibility"}/>;
         for (let support of modSupports) {
-            let support_str = translate("CS2M.UI.Compatibility[" + support.support + "]", support.support);
+            let support_str = <LocalizedString id={"CS2M.UI.Compatibility[" + support.support + "]"}/>;
             if (support.client_side) {
-                support_str = translate("CS2M.UI.ClientSide");
+                support_str = <LocalizedString id={"CS2M.UI.ClientSide"}/>;
             }
             let color;
             switch (support.support) {
@@ -151,7 +163,7 @@ export const JoinGameMenu = () => {
             details.push(<div style={{color: color}}><Field label={support.name}>{support_str}</Field></div>);
         }
     } else {
-        let status_str = translate("CS2M.UI.JoinStatus[" + status + "]", status);
+        let status_str = <LocalizedString id={"CS2M.UI.JoinStatus[" + status + "]"}/>;
         if (status == "DOWNLOADING_MAP") {
             let dlTotal = dlDone + dlRemaining;
             let doneMib = dlDone / 1024 / 1024;
@@ -190,19 +202,20 @@ export const JoinGameMenu = () => {
     }
 
     let footer = <>
-        <FooterButton disabled={!enabled} onSelect={joinGame}>{translate("CS2M.UI.JoinGame")}</FooterButton>
+        <FooterButton disabled={!enabled} onSelect={joinGame}><LocalizedString id={"CS2M.UI.JoinGame"}/></FooterButton>
     </>;
 
     let content;
     if (visible) {
         content = (
-            <SubScreen title={translate("CS2M.UI.Multiplayer")} onClose={hideJoinGame}>
+            <SubScreen title={<LocalizedString id={"CS2M.UI.Multiplayer"}/>} onClose={hideJoinGame}>
                 <InputActionConsumer actions={actions}>
                     <div className={LoadGameScreenCSS.content}>
                         <AutoNavigationScope>
                             <div className={LoadGameScreenCSS.stepContainer}>
                                 <div className={SaveListCSS.saveList + " " + LoadGameScreenCSS.step}>
-                                    <div className={DetailSectionCSS.title}>{translate("CS2M.UI.JoinGame")}</div>
+                                    <div className={DetailSectionCSS.title}><LocalizedString id={"CS2M.UI.JoinGame"}/>
+                                    </div>
                                     <JoinGameSettings></JoinGameSettings>
                                 </div>
                             </div>

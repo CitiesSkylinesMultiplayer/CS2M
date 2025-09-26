@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using System.Linq;
 using Colossal.Serialization.Entities;
 using Colossal.UI.Binding;
 using CS2M.API.Networking;
@@ -24,7 +25,7 @@ namespace CS2M.UI
         private ValueBinding<string> _joinIPAddress;
         private ValueBinding<bool> _joinMenuVisible;
         private ValueBinding<int> _joinPort;
-        private ValueBinding<string[]> _joinErrorMessage;
+        private ValueBinding<List<string>> _joinErrorMessage;
 
         private ValueBinding<List<ModSupportStatus>> _modSupportStatus;
         private ValueBinding<string> _playerStatus;
@@ -76,11 +77,12 @@ namespace CS2M.UI
             AddBinding(_playerStatus = new ValueBinding<string>(Mod.Name, "PlayerStatus", ""));
             AddBinding(_downloadDone = new ValueBinding<int>(Mod.Name, "DownloadDone", 0));
             AddBinding(_downloadRemaining = new ValueBinding<int>(Mod.Name, "DownloadRemaining", 0));
-            AddBinding(_joinErrorMessage = new ValueBinding<string[]>(Mod.Name, "JoinErrorMessage", null));
+            AddBinding(_joinErrorMessage = new ValueBinding<List<string>>(Mod.Name, "JoinErrorMessage",
+                new List<string>(), new ListWriter<string>()));
 
             RegisterChatPanelBindings();
 
-            NetworkInterface.Instance.LocalPlayer.PlayerStatusChangedEvent += (old, status) =>
+            NetworkInterface.Instance.LocalPlayer.PlayerStatusChangedEvent += (_, status) =>
             {
                 _playerStatus.Update(status.ToString());
                 if (status == PlayerStatus.LOADING_MAP)
@@ -164,7 +166,7 @@ namespace CS2M.UI
 
         public void SetJoinErrors(params string[] errorMessageKey)
         {
-            _joinErrorMessage.Update(errorMessageKey);
+            _joinErrorMessage.Update(errorMessageKey.ToList());
         }
     }
 }
