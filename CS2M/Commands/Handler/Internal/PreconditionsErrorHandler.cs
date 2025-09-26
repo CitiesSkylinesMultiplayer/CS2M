@@ -14,8 +14,8 @@ namespace CS2M.Commands.Handler.Internal
         protected override void Handle(PreconditionsErrorCommand command)
         {
             Log.Debug($"[Preconditions Error] {command.Errors.ToString()}");
-            
-            NetworkInterface.Instance.LocalPlayer.Inactive();
+
+            NetworkInterface.Instance.LocalPlayer.PreconditionsError(command);
         }
     }
 }

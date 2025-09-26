@@ -1,8 +1,8 @@
-import { bindValue, trigger, useValue } from "cs2/api";
-import { getModule } from "cs2/modding";
-import { Button, Panel, PanelSection, Scrollable } from "cs2/ui";
-import { useLocalization } from "cs2/l10n";
-import { setVal } from "api";
+import {bindValue, trigger, useValue} from "cs2/api";
+import {getModule} from "cs2/modding";
+import {Button, Panel, PanelSection, Scrollable} from "cs2/ui";
+import {useLocalization} from "cs2/l10n";
+import {setVal} from "api";
 import styles from "./chat.module.scss";
 import mod from "../../mod.json";
 
@@ -27,7 +27,7 @@ export const ChatPanel = (e: any) => {
     const SocialPanelLayout = getModule('game-ui/game/components/game-panel-renderer.tsx', 'SocialPanelLayout');
     const StringInputField = getModule('game-ui/editor/widgets/fields/string-input-field.tsx', 'StringInputField');
 
-    const { translate } = useLocalization();
+    const {translate} = useLocalization();
 
     const chatMessages = useValue(chatMessagesBinding);
     const currentUsername = useValue(currentUsernameBinding);
@@ -36,14 +36,15 @@ export const ChatPanel = (e: any) => {
     return (
         <SocialPanelLayout className={styles.socialPanelLayoutContent}>
             <Panel theme={LightOpaqueTheme}
-                header={translate("CS2M.UI.ChatPanel.Header")}
-                transitionSounds={TransitionSounds}
-                className={LifePathPanelStyle.lifePathPanel}
-                contentClassName={LifePathPanelStyle.content}
-                onClose={e.onClose}>
-                <Scrollable autoScroll={true} smooth={true} >
+                   header={translate("CS2M.UI.ChatPanel.Header")}
+                   transitionSounds={TransitionSounds}
+                   className={LifePathPanelStyle.lifePathPanel}
+                   contentClassName={LifePathPanelStyle.content}
+                   onClose={e.onClose}>
+                <Scrollable autoScroll={true} smooth={true}>
                     {chatMessages?.map(message => (
-                        <div className={`${message.user === currentUsername ? "styles.chatBubble-right" : "styles.chatBubble"}`}>
+                        <div
+                            className={`${message.user === currentUsername ? "styles.chatBubble-right" : "styles.chatBubble"}`}>
                             <div className={styles.content}>
                                 <div className={styles.header}>
                                     <button className={styles.username}>{message.user}</button>
@@ -65,13 +66,15 @@ export const ChatPanel = (e: any) => {
                         className={styles.messageInput}
                         value={localChatMessage}
                         placeholder={translate("CS2M.UI.ChatPanel.ChatMessageInput")}
-                        onChange={(val: any) => { setVal("SetLocalChatMessage", val) }} />
+                        onChange={(val: any) => {
+                            setVal("SetLocalChatMessage", val)
+                        }}/>
                     <Button onClick={sendChatMessage}>
                         {translate("CS2M.UI.ChatPanel.SendMessage")}
                     </Button>
                 </PanelSection>
             </Panel>
-        </SocialPanelLayout >
+        </SocialPanelLayout>
     );
 };
 
@@ -86,10 +89,10 @@ export const ChatIcon = () => {
     return (
         <div className={RightMenuStyle.item}>
             <IconButton src='Media/Game/Icons/Communications.svg'
-                selected={ChatPanelState.visible}
-                onSelect={ChatPanelState.toggle}
-                theme={RightMenuButtonStyle}
-                className={RightMenuButtonStyle.toggleStates}>
+                        selected={ChatPanelState.visible}
+                        onSelect={ChatPanelState.toggle}
+                        theme={RightMenuButtonStyle}
+                        className={RightMenuButtonStyle.toggleStates}>
             </IconButton>
         </div>
     );
