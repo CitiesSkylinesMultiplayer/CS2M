@@ -98,7 +98,7 @@ namespace CS2M.UI
 
         private void PrintMessage(string sender, string msg)
         {
-            Log.Debug($"ChatPanel_PrintMessage: {sender} - {msg}");
+            Log.Info($"Chat message: [{sender}] - {msg}");
             ChatMessages.value.Add(new Message(DateTime.Now.ToShortTimeString(), sender, msg));
             ChatMessages.TriggerUpdate();
         }

@@ -5,6 +5,7 @@ using CS2M.API.Commands;
 using CS2M.API.Networking;
 using CS2M.Commands;
 using CS2M.Commands.ApiServer;
+using CS2M.Commands.Data.Internal;
 using CS2M.Helpers;
 using LiteNetLib;
 using Unity.Entities;
@@ -150,14 +151,20 @@ namespace CS2M.Networking
             PlayerListConnected.Add(player);
             PlayerConnectedEvent?.Invoke(player);
 
+            // Get max packet size from MTU discovery
+            int maxPacketSize = player.NetPeer.GetMaxSinglePacketSize(DeliveryMethod.ReliableOrdered);
+            maxPacketSize -= 25; // Maximum packet overhead as computed and tested in `PacketSizeOverhead` unit test
+
             // Send world
             TaskManager.instance.EnqueueTask("LoadMap", async () =>
             {
                 SaveLoadHelper saveLoadHelper =
                     World.DefaultGameObjectInjectionWorld.GetOrCreateSystemManaged<SaveLoadHelper>();
-                SlicedPacketStream stream = await saveLoadHelper.SaveGame();
+                SlicedPacketStream stream = await saveLoadHelper.SaveGame(maxPacketSize);
                 int remainingBytes = (int)stream.Length;
                 bool newTransfer = true;
+
+                Log.Debug($"Sending world with size of {stream.Length} bytes. Slice size: {maxPacketSize}");
                 foreach (byte[] slice in stream.GetSlices())
                 {
                     remainingBytes -= slice.Length;
@@ -168,7 +175,6 @@ namespace CS2M.Networking
                         NewTransfer = newTransfer
                     };
 
-                    Log.Trace($"World slice of {slice.Length} bytes. Remaining: {remainingBytes}");
                     CommandInternal.Instance.SendToClient(player, cmd);
 
                     newTransfer = false;

@@ -23,14 +23,10 @@ namespace CS2M.Helpers
     /// </summary>
     public class SlicedPacketStream : Stream
     {
-        /// <summary>
-        ///     Length of the slices.
-        /// </summary>
-        private const int SliceLength = 1024;
+        private readonly int _sliceLength;
+        private readonly byte[] _sliceBuffer;
 
-        private readonly byte[] _sliceBuffer = new byte[SliceLength];
-
-        private readonly List<byte[]> _slices = new List<byte[]>();
+        private readonly List<byte[]> _slices = new();
         private int _sliceReadOffset;
         private int _sliceWriteOffset;
 
@@ -40,6 +36,12 @@ namespace CS2M.Helpers
         public override bool CanSeek => false;
         public override bool CanWrite => true;
         public override long Length => _streamLength;
+
+        public SlicedPacketStream(int sliceLength)
+        {
+            _sliceLength = sliceLength;
+            _sliceBuffer = new byte[_sliceLength];
+        }
 
         public override long Position
         {
@@ -81,15 +83,15 @@ namespace CS2M.Helpers
             int readBytes = 0;
             while (readBytes < bytes)
             {
-                int id = _sliceReadOffset / SliceLength;
-                int offset = _sliceReadOffset % SliceLength;
+                int id = _sliceReadOffset / _sliceLength;
+                int offset = _sliceReadOffset % _sliceLength;
                 if (_slices.Count <= id)
                 {
                     break;
                 }
 
                 byte[] slice = _slices[id];
-                int remain = SliceLength - offset;
+                int remain = _sliceLength - offset;
                 int toRead = Math.Min(remain, bytes - readBytes);
 
                 fixed (byte* pSource = slice)
@@ -140,12 +142,12 @@ namespace CS2M.Helpers
 
         public bool AppendSlice(byte[] slice)
         {
-            if (slice.Length > SliceLength)
+            if (slice.Length > _sliceLength)
             {
                 return false;
             }
 
-            if (slice.Length < SliceLength)
+            if (slice.Length < _sliceLength)
             {
                 Array.Copy(slice, 0, _sliceBuffer, 0, slice.Length);
                 _slices.Add(_sliceBuffer.ToArray());
@@ -155,7 +157,7 @@ namespace CS2M.Helpers
                 _slices.Add(slice);
             }
 
-            _streamLength += SliceLength;
+            _streamLength += _sliceLength;
             return true;
         }
 
@@ -195,7 +197,7 @@ namespace CS2M.Helpers
             Enabled = false;
         }
 
-        public async Task<SlicedPacketStream> SaveGame()
+        public async Task<SlicedPacketStream> SaveGame(int sliceLength)
         {
             // See GameManager::Save
             while (_saveGameSystem.Enabled)
@@ -212,7 +214,7 @@ namespace CS2M.Helpers
             GC.Collect();
 
             // Save game to packet stream
-            var stream = new SlicedPacketStream();
+            var stream = new SlicedPacketStream(sliceLength);
             _saveGameSystem.stream = stream;
             _saveGameSystem.context = new Context(Purpose.SaveGame, Version.current, Hash128.Empty);
             await _saveGameSystem.RunOnce();

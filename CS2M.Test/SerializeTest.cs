@@ -1,16 +1,18 @@
+extern alias MsgPack;
+extern alias UnityCore;
 using System;
 using System.Collections.Generic;
-using System.IO;
 using System.Linq;
 using System.Reflection;
 using Colossal.PSI.Common;
 using Colossal.Serialization.Entities;
 using CS2M.API.Commands;
-using MessagePack;
-using MessagePack.Attributeless;
-using MessagePack.Attributeless.Implementation;
-using MessagePack.Formatters;
-using MessagePack.Resolvers;
+using CS2M.Commands.Data.Internal;
+using MsgPack::MessagePack;
+using MsgPack::MessagePack.Attributeless;
+using MsgPack::MessagePack.Attributeless.Implementation;
+using MsgPack::MessagePack.Formatters;
+using MsgPack::MessagePack.Resolvers;
 using NUnit.Framework;
 using Unity.Collections;
 using Unity.Entities;
@@ -20,11 +22,10 @@ using BinaryWriter = Colossal.Serialization.Entities.BinaryWriter;
 
 namespace CS2M.Test
 {
-    extern alias UnityCore;
-
     public static class MessagePackExtensions
     {
-        public static MessagePackSerializerOptionsBuilder BetterGraphOf(this MessagePackSerializerOptionsBuilder builder, Type self, params Assembly[] assemblies)
+        public static MessagePackSerializerOptionsBuilder BetterGraphOf(
+            this MessagePackSerializerOptionsBuilder builder, Type self, params Assembly[] assemblies)
         {
             var result = new List<Type>();
             Add(self);
@@ -60,6 +61,7 @@ namespace CS2M.Test
                     Add(t);
                 }
             }
+
             foreach (var t in result)
             {
                 if (t.IsAbstract) builder.AllSubTypesOf(t, assemblies);
@@ -71,16 +73,15 @@ namespace CS2M.Test
     }
 
 
-
-
-    public class MessagePackExtension<T> : IMessagePackFormatter<T> where T: struct, ISerializable
+    public class MessagePackExtension<T> : IMessagePackFormatter<T> where T : struct, ISerializable
     {
         public void Serialize(
             ref MessagePackWriter writer, T value, MessagePackSerializerOptions options)
         {
             var wrappedWriter = new BinaryWriter();
             var byteArray = new NativeList<byte>(0, UnityCore::Unity.Collections.Allocator.Temp);
-            wrappedWriter.Initialize(wrappedWriter.context, byteArray, new UnityCore::Unity.Collections.NativeArray<Entity>());
+            wrappedWriter.Initialize(wrappedWriter.context, byteArray,
+                new UnityCore::Unity.Collections.NativeArray<Entity>());
 
             value.Serialize(wrappedWriter);
             writer.Write(wrappedWriter.ToBytes());
@@ -95,8 +96,10 @@ namespace CS2M.Test
 
             var wrappedReader = new BinaryReader();
             byte[] bytes = reader.ReadBytes().GetValueOrDefault().ToBytes();
-            var byteArray = new UnityCore::Unity.Collections.NativeArray<byte>(bytes, UnityCore::Unity.Collections.Allocator.Temp);
-            wrappedReader.Initialize(wrappedReader.context, byteArray, new NativeReference<int>(), new UnityCore::Unity.Collections.NativeArray<Entity>());
+            var byteArray =
+                new UnityCore::Unity.Collections.NativeArray<byte>(bytes, UnityCore::Unity.Collections.Allocator.Temp);
+            wrappedReader.Initialize(wrappedReader.context, byteArray, new NativeReference<int>(),
+                new UnityCore::Unity.Collections.NativeArray<Entity>());
 
             T elem = default;
             elem.Deserialize(wrappedReader);
@@ -149,7 +152,8 @@ namespace CS2M.Test
                 return formatter;
             }
 
-            if (typeof(ISerializable).IsAssignableFrom(t) && t.IsValueType) // Check type constraints for custom serializer
+            if (typeof(ISerializable).IsAssignableFrom(t) &&
+                t.IsValueType) // Check type constraints for custom serializer
             {
                 formatter = Activator.CreateInstance(typeof(MessagePackExtension<>).MakeGenericType(t));
                 FormatterMap.Add(t, formatter);
@@ -194,6 +198,60 @@ namespace CS2M.Test
         }
 
         [Test]
+        public void PacketSizeOverhead()
+        {
+            IFormatterResolver resolver = CompositeResolver.Create(
+                // enable extension packages first
+                ColossalResolver.Instance,
+                MessagePack.Unity.Extension.UnityBlitResolver.Instance,
+                MessagePack.Unity.UnityResolver.Instance,
+
+                // finally use standard resolver
+                StandardResolver.Instance
+            );
+            var options = MessagePackSerializerOptions.Standard.WithResolver(resolver).Configure();
+
+            var assemblies = new List<Assembly>()
+            {
+                typeof(CommandBase).Assembly,
+                typeof(WorldTransferCommand).Assembly,
+                typeof(FirstCommand).Assembly,
+            };
+            var model = options.BetterGraphOf(typeof(CommandBase), assemblies.ToArray()).Build();
+
+
+            WorldTransferCommand cmd = new WorldTransferCommand
+            {
+                SenderId = 42,
+                WorldSlice = Array.Empty<byte>(),
+                RemainingBytes = 37,
+                NewTransfer = false
+            };
+
+            byte[] blob = MessagePackSerializer.Serialize(cmd, model);
+            Console.WriteLine("[{0}]", string.Join(", ", blob));
+            Assert.That(blob, Has.Length.EqualTo(10));
+
+            int arraySize = int.MaxValue / 32;
+            cmd = new WorldTransferCommand
+            {
+                SenderId = int.MaxValue,
+                WorldSlice = new byte[arraySize],
+                RemainingBytes = int.MaxValue,
+                NewTransfer = true
+            };
+
+            blob = MessagePackSerializer.Serialize(cmd, model);
+            Console.WriteLine("[{0}]", string.Join(", ", blob));
+
+            // Test if max packet overhead was estimated correctly
+            // 1 - 5 bytes type id, 2 bytes "NewTransfer", 2 - 6 bytes "RemainingBytes", 2 - 6 bytes "SenderId", 3 - 6 bytes "WorldSlice" overhead
+            // type id is just one byte, so max overhead would in theory be 25, but here is 21
+            int maxPacketOverhead = 21;
+            Assert.That(blob, Has.Length.EqualTo(arraySize + maxPacketOverhead));
+        }
+
+        [Test]
         public void MsgPack()
         {
             IFormatterResolver resolver = CompositeResolver.Create(
@@ -215,7 +273,7 @@ namespace CS2M.Test
             var model = options.BetterGraphOf(typeof(CommandBase), assemblies.ToArray()).Build();
             Console.WriteLine(model.Resolver.GetFormatter<Colossal.Version>());
 
-            var first = (FirstCommand) SerializeDeserialize(new FirstCommand
+            var first = (FirstCommand)SerializeDeserialize(new FirstCommand
             {
                 SenderId = 1,
                 StuffHere = new Vector3(1, 2, 3),
@@ -231,7 +289,7 @@ namespace CS2M.Test
                 StuffHere = new Vector3(3, 2, 1),
             }, model);
 
-            var second = (SecondCommand) SerializeDeserialize(new SecondCommand
+            var second = (SecondCommand)SerializeDeserialize(new SecondCommand
             {
                 SenderId = 3,
                 MoreStuffHere = new Vector2(3, 2),

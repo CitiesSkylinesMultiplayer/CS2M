@@ -36,6 +36,7 @@
   "CS2M.UI.JoinError.ClientFailed": "The client failed to start",
   "CS2M.UI.JoinError.InvalidIP": "Invalid server IP",
   "CS2M.UI.JoinError.FailedToConnect": "Failed to connect",
+  "CS2M.UI.JoinError.DownloadFailed": "Failed to download the save game",
   "CS2M.UI.JoinError.GAME_VERSION_MISMATCH": "Game versions do not match! Server has {SERVER}, you have {CLIENT}",
   "CS2M.UI.JoinError.MOD_VERSION_MISMATCH": "CS2M mod versions do not match! Server has {SERVER}, you have {CLIENT}",
   "CS2M.UI.JoinError.USERNAME_NOT_AVAILABLE": "Your username is already in use!",

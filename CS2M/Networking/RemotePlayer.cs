@@ -27,12 +27,14 @@ namespace CS2M.Networking
 
         public void PlayerStatusChanged(PlayerStatus oldPlayerStatus, PlayerStatus newPlayerStatus)
         {
-            Log.Trace($"RemotePlayer: {Username} ({PlayerId}) changed player status from {oldPlayerStatus} to {newPlayerStatus}");
+            Log.Debug(
+                $"RemotePlayer: {Username} ({PlayerId}) changed player status from {oldPlayerStatus} to {newPlayerStatus}");
         }
 
         public void PlayerTypeChanged(PlayerType oldPlayerType, PlayerType newPlayerType)
         {
-            Log.ErrorWithStackTrace($"RemotePlayer: {Username} ({PlayerId}) Player type for remote player shouldn't be changed after initialization");
+            Log.ErrorWithStackTrace(
+                $"RemotePlayer: {Username} ({PlayerId}) Player type for remote player shouldn't be changed after initialization");
         }
 
         public void HandleConnect()

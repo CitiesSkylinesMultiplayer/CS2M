@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using Colossal;
+using Colossal.PSI.Common;
 using CS2M.API.Commands;
 using CS2M.API.Networking;
 using CS2M.Commands;
@@ -18,7 +19,7 @@ namespace CS2M.Networking
 {
     public class LocalPlayer : Player
     {
-        private readonly SlicedPacketStream _packetStream = new();
+        private SlicedPacketStream _packetStream;
         private readonly SaveLoadHelper _saveLoadHelper;
         private NetworkManager _networkManager;
         private UISystem _uiSystem;
@@ -121,7 +122,7 @@ namespace CS2M.Networking
                 ModVersion = VersionUtil.GetModVersion(),
                 GameVersion = VersionUtil.GetGameVersion(),
                 Mods = ModSupport.Instance.RequiredModsForSync,
-                DlcIds = new List<int>(), //TODO: Update with correct DLC List
+                DlcIds = DlcCompat.RequiredDLCsForSync,
             });
 
             PlayerStatus = PlayerStatus.CONNECTION_ESTABLISHED;
@@ -159,9 +160,17 @@ namespace CS2M.Networking
 
             if (err.HasFlag(PreconditionsUtil.Errors.DLCS_MISMATCH))
             {
+                List<int> clientDLCs = DlcCompat.RequiredDLCsForSync;
+                List<int> serverDLCs = command.DlcIds;
+
+                IEnumerable<string> clientNotServer = clientDLCs.Where(mod => !serverDLCs.Contains(mod))
+                    .Select(id => PlatformManager.instance.GetDlcName(new DlcId(id)));
+                IEnumerable<string> serverNotClient = serverDLCs.Where(mod => !clientDLCs.Contains(mod))
+                    .Select(id => PlatformManager.instance.GetDlcName(new DlcId(id)));
+
                 errors.Add("precondition:DLCS_MISMATCH");
-                errors.Add(""); // TODO: Client missing DLCs
-                errors.Add(""); // TODO: Server missing DLCs
+                errors.Add(string.Join(", ", serverNotClient));
+                errors.Add(string.Join(", ", clientNotServer));
             }
 
             if (err.HasFlag(PreconditionsUtil.Errors.MODS_MISMATCH))
@@ -200,7 +209,6 @@ namespace CS2M.Networking
                 return false;
             }
 
-            _packetStream.Clear();
             // Change state to downloading map, next step is to wait until all
             // map packets have been received by `SliceReceived` below.
             PlayerStatus = PlayerStatus.DOWNLOADING_MAP;
@@ -213,6 +221,18 @@ namespace CS2M.Networking
             if (PlayerStatus != PlayerStatus.DOWNLOADING_MAP)
             {
                 Log.Warn("Received world slice, but not in downloading state");
+                return;
+            }
+
+            if (cmd.NewTransfer)
+            {
+                _packetStream = new SlicedPacketStream(cmd.WorldSlice.Length);
+            }
+            else if (_packetStream == null)
+            {
+                Log.Warn("Received world slice without initialized packet stream");
+                _uiSystem.SetJoinErrors("CS2M.JoinError.DownloadFailed");
+                Inactive();
                 return;
             }
 
@@ -238,6 +258,7 @@ namespace CS2M.Networking
                 bool success = await _saveLoadHelper.LoadGame(_packetStream);
                 if (success)
                 {
+                    _packetStream = null; // Clean up save game memory
                     Playing();
                 }
                 // TODO: Error handling
@@ -385,12 +406,12 @@ namespace CS2M.Networking
 
         public void PlayerStatusChanged(PlayerStatus oldPlayerStatus, PlayerStatus newPlayerStatus)
         {
-            Log.Trace($"LocalPlayer: changed player status from {oldPlayerStatus} to {newPlayerStatus}");
+            Log.Debug($"LocalPlayer: changed player status from {oldPlayerStatus} to {newPlayerStatus}");
         }
 
         public void PlayerTypeChanged(PlayerType oldPlayerType, PlayerType newPlayerType)
         {
-            Log.Trace($"LocalPlayer: changed player type from {oldPlayerType} to {newPlayerType}");
+            Log.Debug($"LocalPlayer: changed player type from {oldPlayerType} to {newPlayerType}");
         }
     }
 }

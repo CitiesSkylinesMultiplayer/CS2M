@@ -9,6 +9,7 @@ using CS2M.UI;
 using Game;
 using Game.Modding;
 using HarmonyLib;
+using LiteNetLib;
 
 namespace CS2M
 {
@@ -56,6 +57,8 @@ namespace CS2M
 
             CommandInternal.Instance = new CommandInternal();
             ApiCommand.Instance = new ApiCommand();
+
+            NetDebug.Logger = new NetLogWrapper();
 
             ModSupport.Instance.Init();
 

@@ -10,41 +10,46 @@
     <Import Project="$([System.Environment]::GetEnvironmentVariable('CSII_TOOLPATH', 'EnvironmentVariableTarget.Process'))\Mod.props"/>
 
     <ItemGroup>
-        <PackageReference Include="MessagePack" Version="3.1.3" />
-        <PackageReference Include="MessagePack.Attributeless" Version="1.0.1" />
-        <PackageReference Include="MessagePack.UnityShims" Version="3.1.3" />
-        <PackageReference Include="Microsoft.NET.Test.Sdk" Version="17.13.0" />
-        <PackageReference Include="NUnit" Version="4.3.2" />
-        <PackageReference Include="NUnit3TestAdapter" Version="5.0.0" />
+        <PackageReference Include="MessagePack" Version="3.1.3">
+            <Aliases>MsgPack</Aliases>
+        </PackageReference>
+        <PackageReference Include="MessagePack.Attributeless" Version="1.0.1">
+            <Aliases>MsgPack</Aliases>
+        </PackageReference>
+        <PackageReference Include="MessagePack.UnityShims" Version="3.1.3"/>
+        <PackageReference Include="Microsoft.NET.Test.Sdk" Version="17.13.0"/>
+        <PackageReference Include="NUnit" Version="4.3.2"/>
+        <PackageReference Include="NUnit3TestAdapter" Version="5.0.0"/>
         <PackageReference Include="NUnit.Analyzers" Version="4.6.0">
-          <PrivateAssets>all</PrivateAssets>
-          <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+            <PrivateAssets>all</PrivateAssets>
+            <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
         </PackageReference>
         <PackageReference Include="coverlet.collector" Version="6.0.4">
-          <PrivateAssets>all</PrivateAssets>
-          <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+            <PrivateAssets>all</PrivateAssets>
+            <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
         </PackageReference>
-        <PackageReference Include="protobuf-net" Version="3.2.46" />
+        <PackageReference Include="protobuf-net" Version="3.2.46"/>
     </ItemGroup>
 
     <ItemGroup>
-      <ProjectReference Include="..\CS2M.API\CS2M.API.csproj" />
+        <ProjectReference Include="..\CS2M.API\CS2M.API.csproj"/>
+        <ProjectReference Include="..\CS2M\CS2M.csproj"/>
     </ItemGroup>
 
     <ItemGroup>
-      <Reference Include="Colossal.Core">
-      </Reference>
-      <Reference Include="Colossal.PSI.Common">
-      </Reference>
-      <Reference Include="Unity.Collections">
-      </Reference>
-      <Reference Include="Unity.Entities">
-      </Reference>
-      <Reference Include="UnityEngine">
-      </Reference>
-      <Reference Include="UnityEngine.CoreModule">
-          <Aliases>UnityCore</Aliases>
-      </Reference>
+        <Reference Include="Colossal.Core">
+        </Reference>
+        <Reference Include="Colossal.PSI.Common">
+        </Reference>
+        <Reference Include="Unity.Collections">
+        </Reference>
+        <Reference Include="Unity.Entities">
+        </Reference>
+        <Reference Include="UnityEngine">
+        </Reference>
+        <Reference Include="UnityEngine.CoreModule">
+            <Aliases>UnityCore</Aliases>
+        </Reference>
     </ItemGroup>
 
 </Project>

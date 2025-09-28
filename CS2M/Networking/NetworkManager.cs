@@ -39,7 +39,8 @@ namespace CS2M.Networking
             _netManager = new NetManager(listener)
             {
                 NatPunchEnabled = true,
-                UnconnectedMessagesEnabled = true
+                UnconnectedMessagesEnabled = true,
+                MtuDiscovery = true,
             };
             _apiServer = new ApiServer(_netManager);
 
@@ -311,7 +312,15 @@ namespace CS2M.Networking
         {
             peer.Send(CommandInternal.Instance.Serialize(message), DeliveryMethod.ReliableOrdered);
 
-            Log.Debug($"Sending {message.GetType().Name} to client at {peer.Address}:{peer.Port}");
+            if (message is WorldTransferCommand { NewTransfer: false })
+            {
+                // Due to performance reasons, log "WorldTransferCommand" only on trace level (after logging once)
+                Log.Trace($"Sending {message.GetType().Name} to client at {peer.Address}:{peer.Port}");
+            }
+            else
+            {
+                Log.Debug($"Sending {message.GetType().Name} to client at {peer.Address}:{peer.Port}");
+            }
         }
 
         public void SendToServer(CommandBase message)

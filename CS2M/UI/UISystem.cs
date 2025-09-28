@@ -74,7 +74,7 @@ namespace CS2M.UI
             AddBinding(_hostPort = new ValueBinding<int>(Mod.Name, "HostPort", 0));
             AddBinding(_username = new ValueBinding<string>(Mod.Name, "Username", ""));
 
-            AddBinding(_playerStatus = new ValueBinding<string>(Mod.Name, "PlayerStatus", ""));
+            AddBinding(_playerStatus = new ValueBinding<string>(Mod.Name, "PlayerStatus", "INACTIVE"));
             AddBinding(_downloadDone = new ValueBinding<int>(Mod.Name, "DownloadDone", 0));
             AddBinding(_downloadRemaining = new ValueBinding<int>(Mod.Name, "DownloadRemaining", 0));
             AddBinding(_joinErrorMessage = new ValueBinding<List<string>>(Mod.Name, "JoinErrorMessage",
@@ -94,7 +94,7 @@ namespace CS2M.UI
 
         private void RefreshModSupport()
         {
-            _modSupportStatus.Update(ModCompat.GetModSupportList());
+            _modSupportStatus.Update(DlcCompat.GetDlcSupport().Concat(ModCompat.GetModSupport()).ToList());
         }
 
         private void ShowMultiplayerMenu()
