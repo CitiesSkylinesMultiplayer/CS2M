@@ -43,16 +43,19 @@ namespace CS2M.UI
         private ValueBinding<bool> _hostGameEnabled;
         private ValueBinding<bool> _chatSendEnabled;
         private ValueBinding<string> _playerStatus;
+        private ValueBinding<bool> _stopSrvVis;
 
         private ValueBinding<List<ModSupportStatus>> _modSupportStatus;
 
-        private GameMode _gameMode = GameMode.Other;
+        public GameMode _gameMode = GameMode.Other;
 
         protected override void OnStartRunning()
         {
             base.OnStartRunning();
+
             _activeMenuScreenBinding = BindingsHelper.GetValueBinding<int>("menu", "activeScreen");
             _activeGameScreenBinding = BindingsHelper.GetValueBinding<int>("game", "activeScreen");
+
             var panel = World.GetOrCreateSystemManaged<GamePanelUISystem>();
             panel.SetDefaultArgs(new ChatPanel());
         }
@@ -61,6 +64,28 @@ namespace CS2M.UI
         {
             base.OnCreate();
             Instance = this;
+
+            AddBinding(_joinMenuVisible = new ValueBinding<bool>(nameof(CS2M), "JoinMenuVisible", false));
+            AddBinding(_hostMenuVisible = new ValueBinding<bool>(nameof(CS2M), "HostMenuVisible", false));
+            AddBinding(_modSupportStatus = new ValueBinding<List<ModSupportStatus>>(nameof(CS2M), "modSupport", new List<ModSupportStatus>(), new ListWriter<ModSupportStatus>(new ValueWriter<ModSupportStatus>())));
+
+            AddBinding(_joinIPAddress = new ValueBinding<string>(nameof(CS2M), "JoinIpAddress", "127.0.0.1"));
+            AddBinding(_joinPort = new ValueBinding<int>(nameof(CS2M), "JoinPort", 4230));
+            AddBinding(_hostPort = new ValueBinding<int>(nameof(CS2M), "HostPort", 4230));
+            Random rnd = new Random();
+            AddBinding(_username = new ValueBinding<string>(nameof(CS2M), "Username", "CS2M_u" + rnd.Next(100, 1000)));
+
+            AddBinding(_joinGameEnabled = new ValueBinding<bool>(nameof(CS2M), "JoinGameEnabled", true));
+            AddBinding(_hostGameEnabled = new ValueBinding<bool>(nameof(CS2M), "HostGameEnabled", true));
+            AddBinding(_chatSendEnabled = new ValueBinding<bool>(nameof(CS2M), "ChatSendEnabled", false));
+
+            AddBinding(_stopSrvVis = new ValueBinding<bool>(nameof(CS2M), "stopSrvVisible", false));
+
+            AddBinding(_playerStatus = new ValueBinding<string>(nameof(CS2M), "PlayerStatus", "Playing network session in CSII"));
+
+            AddBinding(_NetworkStates = new ValueBinding<string>(nameof(CS2M), "uiNetworkStates", "= Waiting for commands ="));
+
+
 
             AddBinding(new TriggerBinding(nameof(CS2M), "ShowMultiplayerMenu", ShowUITraversal));
 
@@ -91,30 +116,15 @@ namespace CS2M.UI
                 _usrMsg.Update(usrMsg);
             }));
 
+
             AddBinding(_usrMsg = new ValueBinding<string>(nameof(CS2M), "playerMessage", ""));
 
 
 
             AddBinding(new TriggerBinding(nameof(CS2M), "JoinGame", JoinGame));
             AddBinding(new TriggerBinding(nameof(CS2M), "HostGame", HostGame));
+            AddBinding(new TriggerBinding(nameof(CS2M), "StopServer", stopServer));
 
-            AddBinding(_joinMenuVisible = new ValueBinding<bool>(nameof(CS2M), "JoinMenuVisible", false));
-            AddBinding(_hostMenuVisible = new ValueBinding<bool>(nameof(CS2M), "HostMenuVisible", false));
-            AddBinding(_modSupportStatus = new ValueBinding<List<ModSupportStatus>>(nameof(CS2M), "modSupport", new List<ModSupportStatus>(), new ListWriter<ModSupportStatus>(new ValueWriter<ModSupportStatus>())));
-
-            AddBinding(_joinIPAddress = new ValueBinding<string>(nameof(CS2M), "JoinIpAddress", "127.0.0.1"));
-            AddBinding(_joinPort = new ValueBinding<int>(nameof(CS2M), "JoinPort", 4230));
-            AddBinding(_hostPort = new ValueBinding<int>(nameof(CS2M), "HostPort", 4230));
-            Random rnd = new Random();
-            AddBinding(_username = new ValueBinding<string>(nameof(CS2M), "Username", "CS2M_u" + rnd.Next(100, 1000)));
-
-            AddBinding(_joinGameEnabled = new ValueBinding<bool>(nameof(CS2M), "JoinGameEnabled", true));
-            AddBinding(_hostGameEnabled = new ValueBinding<bool>(nameof(CS2M), "HostGameEnabled", true));
-            AddBinding(_chatSendEnabled = new ValueBinding<bool>(nameof(CS2M), "ChatSendEnabled", false));
-
-            AddBinding(_playerStatus = new ValueBinding<string>(nameof(CS2M), "PlayerStatus", "Playing network session in CSII"));
-
-            AddBinding(_NetworkStates = new ValueBinding<string>(nameof(CS2M), "uiNetworkStates", "= Waiting for commands ="));
             AddBinding(new TriggerBinding(nameof(CS2M), "SendMessage", sendMessage));
 
             Command.ConnectToCSM(
@@ -123,9 +133,9 @@ namespace CS2M.UI
                 sendToClients: NetworkInterface.Instance.SendToClients,
                 getCommandHandler: type =>
                 {
-                    if (type == typeof(PlayerJoinedCommand))
+                    if (type == typeof(StateSyncCommand))
                     {
-                        return new PlayerJoinedHandler();
+                        return new StateSyncCommandHandler();
                     } 
                     if (type == typeof(textMessageCommand))
                     {
@@ -136,7 +146,12 @@ namespace CS2M.UI
                 }
             );
 
-            
+            Log.Info("=== CS2M UI Sys Started ===");
+            Log.Info("Unity: "+Environment.GetEnvironmentVariable("CSII_UNITYVERSION"));
+            Log.Info("Entities: " + Environment.GetEnvironmentVariable("CSII_ENTITIESVERSION"));
+            Log.Info("InstallPath:" + Environment.GetEnvironmentVariable("CSII_INSTALLATIONPATH"));
+            Log.Info("UserFolder:" + Environment.GetEnvironmentVariable("CSII_USERDATAPATH"));
+
         }
 
         private void RefreshModSupport()
@@ -163,6 +178,7 @@ namespace CS2M.UI
             }
             else if (_gameMode == GameMode.Game)
             {
+                
                 ShowHostGameMenu();
                 Log.Info("I'm in active game session. Opening Host UI");
             }
@@ -247,6 +263,17 @@ namespace CS2M.UI
             _hostGameEnabled.Update(false);
             _joinGameEnabled.Update(false);
             _chatSendEnabled.Update(true);
+            _stopSrvVis.Update(true);
+        }
+
+        private void stopServer()
+        {
+            SetGameState(PlayerStatus.INACTIVE);
+            LocalPlayer.Instance.Inactive();
+            _hostGameEnabled.Update(true);
+            _joinGameEnabled.Update(true);
+            _chatSendEnabled.Update(true);
+            _stopSrvVis.Update(false);
         }
 
         public void SetGameState(PlayerStatus status)
@@ -265,27 +292,26 @@ namespace CS2M.UI
 
 
 
-public class PlayerJoinedCommand : CommandBase
+public class StateSyncCommand : CommandBase
 {
-    public string PlayerName { get; set; }
+    public string pathToSave { get; set; }
 
-    public PlayerJoinedCommand() { }
+    public StateSyncCommand() { }
 
-    public PlayerJoinedCommand(int senderId, string playerName)
+    public StateSyncCommand(string pathFromSave)
     {
-        SenderId = senderId;
-        PlayerName = playerName;
-        MesasgeBody = $"{playerName} has joined the server";
+        pathToSave = pathFromSave;
+        Log.Info("Command StateSyncCommand:" + pathToSave);
     }
 
 }
 
-public class PlayerJoinedHandler : CommandHandler<PlayerJoinedCommand>
+public class StateSyncCommandHandler : CommandHandler<StateSyncCommand>
 {
-    protected override void Handle(PlayerJoinedCommand command)
+    protected override void Handle(StateSyncCommand command)
     {
 
-        Log.Info(command.MesasgeBody);
+        Log.Info("Command StateSyncCommand:" + command.MesasgeBody);
         UISystem.Instance?.piblishNetworkStateInUI(command.MesasgeBody);
 
     }

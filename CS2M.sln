@@ -1,5 +1,8 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 17
+VisualStudioVersion = 17.14.36511.14 d17.14
+MinimumVisualStudioVersion = 10.0.40219.1
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CS2M", "CS2M\CS2M.csproj", "{EDB4C83E-C951-40B3-A0F9-555821957AA4}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CS2M.API", "CS2M.API\CS2M.API.csproj", "{F335F74A-E2A1-4B9A-90E7-68E1ECA6B396}"
@@ -30,5 +33,11 @@ Global
 		{F7AF1B61-B1A1-42C6-889F-90CF7CF79FB7}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{F7AF1B61-B1A1-42C6-889F-90CF7CF79FB7}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{F7AF1B61-B1A1-42C6-889F-90CF7CF79FB7}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {2A779DA5-DC4D-4E71-9A97-23F6A5D34669}
 	EndGlobalSection
 EndGlobal

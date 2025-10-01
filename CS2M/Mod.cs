@@ -1,4 +1,5 @@
 ﻿using Colossal.IO.AssetDatabase;
+using Colossal.Logging;
 using CS2M.Commands;
 using CS2M.Commands.ApiServer;
 using CS2M.Mods;
@@ -12,6 +13,7 @@ namespace CS2M
     public class Mod : IMod
     {
         public static Settings.Settings ModSettings;
+        public static ILog log = LogManager.GetLogger($"{nameof(CS2M)}.{nameof(Mod)}").SetShowsErrorsInUI(false);
 
         public void OnLoad(UpdateSystem updateSystem)
         {

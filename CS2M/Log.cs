@@ -1,6 +1,9 @@
-﻿using System;
-using Colossal.Logging;
+﻿using Colossal.Logging;
+using System;
+using System.Collections.Generic;
 using System.Diagnostics;
+using System.Linq;
+using System.Reflection;
 
 namespace CS2M
 {
@@ -50,6 +53,43 @@ namespace CS2M
         {
             Logger.Debug(message);
             System.Diagnostics.Debug.Print(message);
+        }
+
+        public static void FindAllMethodsReturning<T>()
+        {
+            var result = new List<MethodInfo>();
+            var targetType = typeof(T);
+
+            foreach (var assembly in AppDomain.CurrentDomain.GetAssemblies())
+            {
+                Type[] types;
+                try
+                {
+                    types = assembly.GetTypes();
+                }
+                catch (ReflectionTypeLoadException ex)
+                {
+                    types = ex.Types.Where(t => t != null).ToArray();
+                }
+
+                foreach (var type in types)
+                {
+                    foreach (var method in type.GetMethods(BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance | BindingFlags.Static))
+                    {
+                        if (method.ReturnType == targetType)
+                        {
+                            result.Add(method);
+                        }
+                    }
+                }
+            }
+
+            var methods = result;
+            foreach (var method in methods)
+            {
+                Log.Info($"Метод: {method.DeclaringType.FullName}.{method.Name} возвращает ILocalAssetDatabase");
+            }
+
         }
     }
 }

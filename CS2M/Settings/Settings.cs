@@ -18,6 +18,7 @@ namespace CS2M.Settings
         private const string GeneralSettings = "GeneralSettings";
         private const string AdvancedSettings = "AdvancedSettings";
 
+
         [SettingsUISection(Section, GeneralSettings)]
         [SettingsUIDropdown(typeof(Settings), nameof(GetLoggingLevels))]
         [SettingsUISetter(typeof (Settings), nameof(OnSetLoggingLevel))]
@@ -31,6 +32,10 @@ namespace CS2M.Settings
         [SettingsUITextInput]
         public string ApiServerPort { get; set; }
 
+        [SettingsUISection(Section, GeneralSettings)]
+        [SettingsUITextInput]
+        public string userID { get; set; }
+
         public Settings(IMod mod) : base(mod)
         {
             SetDefaults();
@@ -41,6 +46,7 @@ namespace CS2M.Settings
             LoggingLevel = Level.Debug.severity;
             ApiServer = "api.citiesskylinesmultiplayer.com";
             ApiServerPort = "4242";
+            userID = "";
         }
 
         public static DropdownItem<int>[] GetLoggingLevels()
