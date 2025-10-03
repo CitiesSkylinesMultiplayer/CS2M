@@ -224,7 +224,8 @@ export const JoinGameMenu = () => {
                         <AutoNavigationScope>
                             <div className={LoadGameScreenCSS.stepContainer}>
                                 <div className={SaveListCSS.saveList + " " + LoadGameScreenCSS.step}>
-                                    <div className={DetailSectionCSS.title}><LocalizedString id={"CS2M.UI.JoinGame"}/>
+                                    <div className={DetailSectionCSS.title}>
+                                        <LocalizedString id={"CS2M.UI.JoinGame"}/>
                                     </div>
                                     <JoinGameSettings></JoinGameSettings>
                                 </div>

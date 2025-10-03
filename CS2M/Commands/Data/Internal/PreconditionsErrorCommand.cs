@@ -1,5 +1,4 @@
-﻿using Colossal.UI.Binding;
-using CS2M.Util;
+﻿using CS2M.Util;
 
 namespace CS2M.Commands.Data.Internal
 {
