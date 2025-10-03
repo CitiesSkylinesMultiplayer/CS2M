@@ -15,6 +15,7 @@ export const username = bindValue<string>(mod.id, 'Username');
 export const playerStatus = bindValue<string>(mod.id, 'PlayerStatus');
 export const downloadDone = bindValue<number>(mod.id, 'DownloadDone');
 export const downloadRemaining = bindValue<number>(mod.id, 'DownloadRemaining');
+export const downloadSpeed = bindValue<number>(mod.id, 'DownloadSpeed');
 export const joinErrorMessage = bindValue<Array<string>>(mod.id, 'JoinErrorMessage');
 
 export function hideJoinGame() {
@@ -131,6 +132,7 @@ export const JoinGameMenu = () => {
     const status = useValue(playerStatus);
     const dlDone = useValue(downloadDone);
     const dlRemaining = useValue(downloadRemaining);
+    const dlSpeed = useValue(downloadSpeed);
 
     let enabled = status == "INACTIVE";
 
@@ -168,28 +170,36 @@ export const JoinGameMenu = () => {
             let dlTotal = dlDone + dlRemaining;
             let doneMib = dlDone / 1024 / 1024;
             let totalMib = dlTotal / 1024 / 1024;
+            let speedMib = dlSpeed / 1024 / 1024;
 
-            let dlValues;
             if (dlTotal == 0) {
                 dlTotal = 100;
             } else {
-                dlValues = <>
-                    <LocalizedNumber
+                details.push(<>
+                    <span style={{whiteSpace: "nowrap", paddingLeft: "2em"}}>
+                        <LocalizedNumber
+                            unit={Unit.FloatSingleFraction}
+                            signed={false}
+                            value={doneMib}
+                        />&nbsp;MiB
+                        &nbsp;/&nbsp;
+                        <LocalizedNumber
+                            unit={Unit.FloatSingleFraction}
+                            signed={false}
+                            value={totalMib}
+                        />&nbsp;MiB&nbsp;
+                        (<LocalizedNumber
                         unit={Unit.FloatSingleFraction}
                         signed={false}
-                        value={doneMib}
-                    />&nbsp;MiB
-                    &nbsp;/&nbsp;
-                    <LocalizedNumber
-                        unit={Unit.FloatSingleFraction}
-                        signed={false}
-                        value={totalMib}
-                    />&nbsp;MiB
-                </>;
+                        value={speedMib}
+                    />&nbsp;MiB/s)
+                    </span>
+                </>);
+                details.push(<span style={{flexGrow: "1"}}></span>);
             }
 
             let download_state = <>
-                {dlValues}&nbsp;(<LocalizedPercentage value={dlDone} max={dlTotal}/>)
+                (<LocalizedPercentage value={dlDone} max={dlTotal}/>)
             </>;
             detailsTitle = <>
                 <span style={{whiteSpace: "nowrap"}}>

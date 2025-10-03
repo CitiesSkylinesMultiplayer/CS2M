@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using Colossal;
 using CS2M.API.Commands;
@@ -164,6 +165,9 @@ namespace CS2M.Networking
                 int remainingBytes = (int)stream.Length;
                 bool newTransfer = true;
 
+                var watch = new Stopwatch();
+                watch.Start();
+
                 Log.Debug($"Sending world with size of {stream.Length} bytes. Slice size: {maxPacketSize}");
                 foreach (byte[] slice in stream.GetSlices())
                 {
@@ -172,13 +176,15 @@ namespace CS2M.Networking
                     {
                         WorldSlice = slice,
                         RemainingBytes = remainingBytes,
-                        NewTransfer = newTransfer
+                        NewTransfer = newTransfer,
                     };
 
                     CommandInternal.Instance.SendToClient(player, cmd);
 
                     newTransfer = false;
                 }
+
+                Log.Debug($"[SaveGame] Save game packaging took {watch.ElapsedMilliseconds}ms");
             });
         }
     }

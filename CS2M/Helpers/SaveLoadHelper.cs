@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Reflection;
@@ -205,6 +206,9 @@ namespace CS2M.Helpers
                 // TODO: Sleep?
             }
 
+            var watch = new Stopwatch();
+            watch.Start();
+
             // Disable auto-save so it doesn't collide with our save process
             bool autoSaveEnabled = SharedSettings.instance.general.autoSave;
             SharedSettings.instance.general.autoSave = false;
@@ -213,12 +217,17 @@ namespace CS2M.Helpers
             Resources.UnloadUnusedAssets();
             GC.Collect();
 
+            Log.Debug($"[SaveGame] GC took {watch.ElapsedMilliseconds}ms");
+            watch.Restart();
+
             // Save game to packet stream
             var stream = new SlicedPacketStream(sliceLength);
             _saveGameSystem.stream = stream;
             _saveGameSystem.context = new Context(Purpose.SaveGame, Version.current, Hash128.Empty);
             await _saveGameSystem.RunOnce();
             stream.Flush();
+
+            Log.Debug($"[SaveGame] Save took {watch.ElapsedMilliseconds}ms");
 
             // Re-enable autosave if needed
             SharedSettings.instance.general.autoSave = autoSaveEnabled;

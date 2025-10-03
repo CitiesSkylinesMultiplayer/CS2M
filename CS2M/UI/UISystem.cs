@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using Colossal.Serialization.Entities;
 using Colossal.UI.Binding;
@@ -17,6 +18,7 @@ namespace CS2M.UI
         private ValueBinding<int> _activeMenuScreenBinding;
         private ValueBinding<int> _downloadDone;
         private ValueBinding<int> _downloadRemaining;
+        private ValueBinding<int> _downloadSpeed;
 
         private GameMode _gameMode = GameMode.Other;
         private ValueBinding<bool> _hostMenuVisible;
@@ -31,6 +33,9 @@ namespace CS2M.UI
         private ValueBinding<string> _playerStatus;
 
         private ValueBinding<string> _username;
+
+        private readonly Stopwatch _downloadTimer = new();
+        private int _lastDownloadDone = 0;
 
         private ChatPanel ChatPanel { get; } = new();
 
@@ -77,6 +82,7 @@ namespace CS2M.UI
             AddBinding(_playerStatus = new ValueBinding<string>(Mod.Name, "PlayerStatus", "INACTIVE"));
             AddBinding(_downloadDone = new ValueBinding<int>(Mod.Name, "DownloadDone", 0));
             AddBinding(_downloadRemaining = new ValueBinding<int>(Mod.Name, "DownloadRemaining", 0));
+            AddBinding(_downloadSpeed = new ValueBinding<int>(Mod.Name, "DownloadSpeed", 0));
             AddBinding(_joinErrorMessage = new ValueBinding<List<string>>(Mod.Name, "JoinErrorMessage",
                 new List<string>(), new ListWriter<string>()));
 
@@ -160,6 +166,21 @@ namespace CS2M.UI
 
         public void SetLoadProgress(int downloadDone, int downloadRemaining)
         {
+            if (downloadDone == 0)
+            {
+                _downloadTimer.Restart();
+                _lastDownloadDone = 0;
+            }
+
+            long elapsedMillis = _downloadTimer.ElapsedMilliseconds;
+            if (elapsedMillis > 500)
+            {
+                int bytesDiff = downloadDone - _lastDownloadDone;
+                _downloadTimer.Restart();
+                _lastDownloadDone = downloadDone;
+                _downloadSpeed.Update((int)((bytesDiff / elapsedMillis) * 1000));
+            }
+
             _downloadDone.Update(downloadDone);
             _downloadRemaining.Update(downloadRemaining);
         }
