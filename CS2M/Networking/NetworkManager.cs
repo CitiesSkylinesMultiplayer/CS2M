@@ -39,7 +39,8 @@ namespace CS2M.Networking
             _netManager = new NetManager(listener)
             {
                 NatPunchEnabled = true,
-                UnconnectedMessagesEnabled = true
+                UnconnectedMessagesEnabled = true,
+                MtuDiscovery = true,
             };
             _apiServer = new ApiServer(_netManager);
 
@@ -71,7 +72,6 @@ namespace CS2M.Networking
             if (!result)
             {
                 Log.Error("The client failed to start.");
-                //ConnectionMessage = "Client failed to start.";
                 return false;
             }
 
@@ -92,7 +92,6 @@ namespace CS2M.Networking
                 }
                 catch
                 {
-                    //ConnectionMessage = "Invalid server IP";
                     return false;
                 }
             }
@@ -143,7 +142,8 @@ namespace CS2M.Networking
             {
                 Log.Trace("NetworkManager: Start NAT hole punch");
                 _netManager.NatPunchModule.SendNatIntroduceRequest(
-                    IPUtil.CreateIP4EndPoint(Mod.Instance.Settings.ApiServer, Mod.Instance.Settings.GetApiServerPort()), connect);
+                    IPUtil.CreateIP4EndPoint(Mod.Instance.Settings.ApiServer, Mod.Instance.Settings.GetApiServerPort()),
+                    connect);
                 _timeout.Start();
             }
             catch (Exception e)
@@ -195,14 +195,15 @@ namespace CS2M.Networking
             return _connectionConfig.Password;
         }
 
-        private void ListenerOnNetworkReceiveEvent(NetPeer peer, NetPacketReader reader, byte channel, DeliveryMethod deliveryMethod)
+        private void ListenerOnNetworkReceiveEvent(NetPeer peer, NetPacketReader reader, byte channel,
+            DeliveryMethod deliveryMethod)
         {
             CommandBase command = CommandInternal.Instance.Deserialize(reader.GetRemainingBytes());
             CommandHandler handler = CommandInternal.Instance.GetCommandHandler(command.GetType());
             Log.Trace($"NetworkManager: OnNetworkReceiveEvent [PeerId: {peer.Id}] {command.GetType()}");
             if (command is PreconditionsCheckCommand)
             {
-                ((PreconditionsCheckHandler) handler).HandleOnServer((PreconditionsCheckCommand) command, peer);
+                ((PreconditionsCheckHandler)handler).HandleOnServer((PreconditionsCheckCommand)command, peer);
                 return;
             }
 
@@ -211,7 +212,7 @@ namespace CS2M.Networking
             {
                 return;
             }
-            
+
             //TODO: Check that only the relevant command could be sent in connected, not joined state
 
             handler.Parse(command);
@@ -236,7 +237,8 @@ namespace CS2M.Networking
                 {
                     if (NetworkInterface.Instance.GetPlayerByPeer(peer) == null)
                     {
-                        Log.Warn($"Client peer {peer.Id} did not register within {_timeout.Interval / 1000} seconds. Disconnecting peer.");
+                        Log.Warn(
+                            $"Client peer {peer.Id} did not register within {_timeout.Interval / 1000} seconds. Disconnecting peer.");
                         peer.Disconnect();
                     }
                 };
@@ -293,6 +295,7 @@ namespace CS2M.Networking
             {
                 _netManager.NatPunchModule.PollEvents();
             }
+
             _netManager.PollEvents();
             // Trigger keepalive to api server
             _apiServer.KeepAlive(_connectionConfig);
@@ -309,7 +312,15 @@ namespace CS2M.Networking
         {
             peer.Send(CommandInternal.Instance.Serialize(message), DeliveryMethod.ReliableOrdered);
 
-            Log.Debug($"Sending {message.GetType().Name} to client at {peer.Address}:{peer.Port}");
+            if (message is WorldTransferCommand { NewTransfer: false })
+            {
+                // Due to performance reasons, log "WorldTransferCommand" only on trace level (after logging once)
+                Log.Trace($"Sending {message.GetType().Name} to client at {peer.Address}:{peer.Port}");
+            }
+            else
+            {
+                Log.Debug($"Sending {message.GetType().Name} to client at {peer.Address}:{peer.Port}");
+            }
         }
 
         public void SendToServer(CommandBase message)

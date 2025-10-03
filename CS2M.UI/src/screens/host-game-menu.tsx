@@ -4,20 +4,16 @@ import mod from "../../mod.json";
 import {FocusBoundary, NavigationScope} from "cs2/input";
 import {useLocalization} from "cs2/l10n";
 import {InputField} from "../util/input-field";
+import {setVal} from "../api";
 
 export const hostMenuVisible = bindValue<boolean>(mod.id, 'HostMenuVisible');
 export const modSupport = bindValue<Array<any>>(mod.id, 'modSupport');
 export const port = bindValue<number>(mod.id, 'HostPort');
 export const username = bindValue<string>(mod.id, 'Username');
-export const hostGameEnabled = bindValue<boolean>(mod.id, 'HostGameEnabled');
 export const playerStatus = bindValue<string>(mod.id, 'PlayerStatus');
 
 export function hideHostGame() {
     trigger(mod.id, "HideHostGameMenu");
-}
-
-export function setVal(name: string, value: any) {
-    trigger(mod.id, name, value);
 }
 
 export function setIntVal(name: string, value: any) {
@@ -28,23 +24,35 @@ export function hostGame() {
     trigger(mod.id, "HostGame");
 }
 
+export function stopServer() {
+    trigger(mod.id, "StopServer");
+}
+
 export const HostGameSettings = () => {
     const GameOptionsCSS = getModule('game-ui/menu/components/shared/game-options/game-options.module.scss', 'classes');
 
     let portValue = useValue(port);
     let usernameValue = useValue(username);
-    let enabled = useValue(hostGameEnabled);
+    const status = useValue(playerStatus);
 
-    const focusChange = () => {};
+    const enabled = status == "INACTIVE";
+
+    const focusChange = () => {
+    };
     return (
         <FocusBoundary onFocusChange={focusChange}>
             <div className={GameOptionsCSS.mainRow}>
                 <div className={GameOptionsCSS.optionsColumn}>
-                    <NavigationScope focused={null} onChange={() => {}}>
+                    <NavigationScope focused={null} onChange={() => {
+                    }}>
                         <InputField label={"CS2M.UI.Port"} value={portValue} disabled={!enabled}
-                                    onChange={(val : any) => {setIntVal("SetHostPort", val)}}></InputField>
+                                    onChange={(val: any) => {
+                                        setIntVal("SetHostPort", val)
+                                    }}></InputField>
                         <InputField label={"CS2M.UI.Username"} value={usernameValue} disabled={!enabled}
-                                    onChange={(val: any) => {setVal("SetUsername", val)}}></InputField>
+                                    onChange={(val: any) => {
+                                        setVal("SetUsername", val)
+                                    }}></InputField>
                     </NavigationScope>
                 </div>
                 <div className={GameOptionsCSS.infoColumn}>
@@ -66,46 +74,47 @@ export const HostGameMenu = () => {
     const SaveListCSS = getModule('game-ui/menu/components/load-game-screen/save-list/save-list.module.scss', 'classes');
     const FooterButton = getModule('game-ui/menu/components/shared/detail-section/detail-section.tsx', 'FooterButton');
 
-    const visible : boolean = useValue(hostMenuVisible);
-    const modSupports  = useValue(modSupport);
-    const enabled = useValue(hostGameEnabled);
+    const visible: boolean = useValue(hostMenuVisible);
+    const modSupports = useValue(modSupport);
     const status = useValue(playerStatus);
 
-    const { translate } = useLocalization();
+    const enabled = status == "INACTIVE";
+
+    const {translate} = useLocalization();
 
     const actions = {};
 
     let details = [];
-    let detailsTitle;
-    if (enabled) {
-        detailsTitle = translate("CS2M.UI.Compatibility");
-        for (let support of modSupports) {
-            let support_str = translate("CS2M.UI.Compatibility[" + support.support + "]", support.support);
-            if (support.client_side) {
-                support_str = translate("CS2M.UI.ClientSide");
-            }
-            let color;
-            switch (support.support) {
-                case "Unsupported":
-                    color = "red";
-                    break;
-                case "Supported":
-                    color = "green";
-                    break;
-                case "KnownWorking":
-                    color = "yellow";
-                    break;
-                default:
-                    color = "orange";
-                    break;
-            }
-            details.push(<div style={{color: color}}><Field label={support.name}>{support_str}</Field></div>);
+    let detailsTitle = translate("CS2M.UI.Compatibility");
+    for (let support of modSupports) {
+        let support_str = translate("CS2M.UI.Compatibility[" + support.support + "]", support.support);
+        if (support.client_side) {
+            support_str = translate("CS2M.UI.ClientSide");
         }
-    } else {
-        detailsTitle = status ?? translate("CS2M.UI.StartingServer");
+        let color;
+        switch (support.support) {
+            case "Unsupported":
+                color = "red";
+                break;
+            case "Supported":
+                color = "green";
+                break;
+            case "KnownWorking":
+                color = "yellow";
+                break;
+            default:
+                color = "orange";
+                break;
+        }
+        details.push(<div style={{color: color}}><Field label={support.name}>{support_str}</Field></div>);
     }
 
-    let footer = <FooterButton disabled={!enabled} onSelect={hostGame}>{translate("CS2M.UI.StartServer")}</FooterButton>;
+    let footer;
+    if (enabled) {
+        footer = <FooterButton onSelect={hostGame}>{translate("CS2M.UI.StartServer")}</FooterButton>;
+    } else {
+        footer = <FooterButton onSelect={stopServer}>{translate("CS2M.UI.StopServer")}</FooterButton>;
+    }
 
     let content;
     if (visible) {
@@ -120,7 +129,8 @@ export const HostGameMenu = () => {
                                     <HostGameSettings></HostGameSettings>
                                 </div>
                             </div>
-                            <DetailSection title={detailsTitle} className={LoadGameScreenCSS.detail} content={details} footer={footer}>
+                            <DetailSection title={detailsTitle} className={LoadGameScreenCSS.detail} content={details}
+                                           footer={footer}>
                             </DetailSection>
                         </AutoNavigationScope>
                     </div>

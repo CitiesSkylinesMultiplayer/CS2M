@@ -14,20 +14,11 @@ namespace CS2M.Mods
     internal class ModSupport
     {
         private static ModSupport _instance;
-        public static ModSupport Instance => _instance ?? (_instance = new ModSupport());
+        public static ModSupport Instance => _instance ??= new ModSupport();
 
-        public List<ModConnection> ConnectedMods { get; } = new List<ModConnection>();
+        public List<ModConnection> ConnectedMods { get; } = new();
 
-        public List<string> RequiredModsForSync
-        {
-            get
-            {
-                return ConnectedNonClientModNames
-                    /*.Concat(Singleton<PluginManager>.instance.GetPluginsInfo()
-                      .Where(plugin => plugin.isEnabled && plugin.isBuiltin).Select(plugin => plugin.name))
-                    .Concat(AssetNames)*/.ToList();
-            }
-        }
+        public List<string> RequiredModsForSync => ConnectedNonClientModNames.ToList();
 
         private IEnumerable<string> ConnectedNonClientModNames
         {
@@ -43,7 +34,7 @@ namespace CS2M.Mods
         {
             get
             {
-                return new List<string>();/*PackageManager.FilterAssets(UserAssetType.CustomAssetMetaData)
+                return new List<string>(); /*PackageManager.FilterAssets(UserAssetType.CustomAssetMetaData)
                     .Where(asset => asset.isEnabled)
                     .Select(asset => new EntryData(asset))
                     .Select(entry => entry.entryName.Split('(')[0].Trim());*/
@@ -97,7 +88,6 @@ namespace CS2M.Mods
 
         private void OnGamePreload(Purpose purpose, GameMode mode)
         {
-            Log.Debug("Purpose: " + purpose + "; GameMode: " + mode);
             if (mode == GameMode.Game)
             {
                 // TODO: Decide by mode if the function should be called
@@ -106,14 +96,12 @@ namespace CS2M.Mods
                     mod.RegisterHandlers();
                 }
             }
-        }
-
-        // TODO:
-        private void OnLevelUnloading()
-        {
-            foreach (ModConnection mod in ConnectedMods)
+            else if (mode == GameMode.MainMenu)
             {
-                mod.UnregisterHandlers();
+                foreach (ModConnection mod in ConnectedMods)
+                {
+                    mod.UnregisterHandlers();
+                }
             }
         }
 
@@ -121,7 +109,7 @@ namespace CS2M.Mods
         {
             ConnectedMods.Clear();
             ConnectedMods.TrimExcess();
-            
+
             GameManager.instance.onGamePreload -= OnGamePreload;
             //Singleton<PluginManager>.instance.eventPluginsChanged -= LoadModConnections;
             //Singleton<PluginManager>.instance.eventPluginsStateChanged -= LoadModConnections;

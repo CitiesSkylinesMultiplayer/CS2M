@@ -1,51 +1,69 @@
 ﻿using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
+using Colossal;
 using CS2M.API.Commands;
 using CS2M.API.Networking;
+using CS2M.Commands;
 using CS2M.Commands.ApiServer;
+using CS2M.Commands.Data.Internal;
+using CS2M.Helpers;
 using LiteNetLib;
+using Unity.Entities;
 
 namespace CS2M.Networking
 {
     public class NetworkInterface
     {
+        public delegate void OnPlayerConnected(Player player);
+
+        public delegate void OnPlayerDisconnected(Player player);
+
+        public delegate void OnPlayerJoined(Player player);
+
+        public delegate void OnPlayerLeft(Player player);
+
         private static NetworkInterface _instance;
 
-        public static NetworkInterface Instance => _instance ??= new NetworkInterface();
+        public readonly LocalPlayer LocalPlayer = new();
 
         /// <summary>
-        /// Event is triggered, when a player is connected on the network level
+        ///     List of all players, which are connected on network level
         /// </summary>
-        public event OnPlayerConnected PlayerConnectedEvent;
-        /// <summary>
-        /// Event is triggered, when a player disconnects on the network level
-        /// </summary>
-        public event OnPlayerDisconnected PlayerDisconnectedEvent;
-        /// <summary>
-        /// Event is triggered, when a player joins on the game level
-        /// </summary>
-        public event OnPlayerJoined PlayerJoinedEvent;
-        /// <summary>
-        /// Event is triggered, when a player leaves on the game level
-        /// </summary>
-        public event OnPlayerLeft PlayerLeftEvent;
+        public List<Player> PlayerListConnected = new();
 
         /// <summary>
-        /// List of all players, which are connected on network level
+        ///     List of all players, which are connected on game level
         /// </summary>
-        public List<Player> PlayerListConnected = new List<Player>();
-        /// <summary>
-        /// List of all players, which are connected on game level
-        /// </summary>
-        public List<Player> PlayerListJoined = new List<Player>();
-
-        public readonly LocalPlayer LocalPlayer = new LocalPlayer();
+        public List<Player> PlayerListJoined = new();
 
         public NetworkInterface()
         {
             PlayerListConnected.Add(LocalPlayer);
             PlayerListJoined.Add(LocalPlayer);
         }
+
+        public static NetworkInterface Instance => _instance ??= new NetworkInterface();
+
+        /// <summary>
+        ///     Event is triggered, when a player is connected on the network level
+        /// </summary>
+        public event OnPlayerConnected PlayerConnectedEvent;
+
+        /// <summary>
+        ///     Event is triggered, when a player disconnects on the network level
+        /// </summary>
+        public event OnPlayerDisconnected PlayerDisconnectedEvent;
+
+        /// <summary>
+        ///     Event is triggered, when a player joins on the game level
+        /// </summary>
+        public event OnPlayerJoined PlayerJoinedEvent;
+
+        /// <summary>
+        ///     Event is triggered, when a player leaves on the game level
+        /// </summary>
+        public event OnPlayerLeft PlayerLeftEvent;
 
         public void OnUpdate()
         {
@@ -65,6 +83,11 @@ namespace CS2M.Networking
         public void StartServer(ConnectionConfig connectionConfig)
         {
             LocalPlayer.Playing(connectionConfig);
+        }
+
+        public void StopServer()
+        {
+            LocalPlayer.Inactive();
         }
 
         public void SendToAll(CommandBase message)
@@ -128,14 +151,41 @@ namespace CS2M.Networking
             Log.Debug($"RemotePlayer '{player.Username}' connected.");
             PlayerListConnected.Add(player);
             PlayerConnectedEvent?.Invoke(player);
+
+            // Get max packet size from MTU discovery
+            int maxPacketSize = player.NetPeer.GetMaxSinglePacketSize(DeliveryMethod.ReliableOrdered);
+            maxPacketSize -= 25; // Maximum packet overhead as computed and tested in `PacketSizeOverhead` unit test
+
+            // Send world
+            TaskManager.instance.EnqueueTask("LoadMap", async () =>
+            {
+                SaveLoadHelper saveLoadHelper =
+                    World.DefaultGameObjectInjectionWorld.GetOrCreateSystemManaged<SaveLoadHelper>();
+                SlicedPacketStream stream = await saveLoadHelper.SaveGame(maxPacketSize);
+                int remainingBytes = (int)stream.Length;
+                bool newTransfer = true;
+
+                var watch = new Stopwatch();
+                watch.Start();
+
+                Log.Debug($"Sending world with size of {stream.Length} bytes. Slice size: {maxPacketSize}");
+                foreach (byte[] slice in stream.GetSlices())
+                {
+                    remainingBytes -= slice.Length;
+                    var cmd = new WorldTransferCommand
+                    {
+                        WorldSlice = slice,
+                        RemainingBytes = remainingBytes,
+                        NewTransfer = newTransfer,
+                    };
+
+                    CommandInternal.Instance.SendToClient(player, cmd);
+
+                    newTransfer = false;
+                }
+
+                Log.Debug($"[SaveGame] Save game packaging took {watch.ElapsedMilliseconds}ms");
+            });
         }
-
-        public delegate void OnPlayerConnected(Player player);
-
-        public delegate void OnPlayerDisconnected(Player player);
-
-        public delegate void OnPlayerJoined(Player player);
-
-        public delegate void OnPlayerLeft(Player player);
     }
 }

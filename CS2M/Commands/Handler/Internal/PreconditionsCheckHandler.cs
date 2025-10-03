@@ -1,5 +1,4 @@
-﻿using System.Collections.Generic;
-using System.Linq;
+﻿using System.Linq;
 using CS2M.API.Commands;
 using CS2M.API.Networking;
 using CS2M.Commands.Data.Internal;
@@ -59,7 +58,7 @@ namespace CS2M.Commands.Handler.Internal
                     ModVersion = VersionUtil.GetModVersion(),
                     GameVersion = VersionUtil.GetGameVersion(),
                     Mods = ModSupport.Instance.RequiredModsForSync,
-                    DlcIds = new List<int>(), //TODO: Update with correct DLC List
+                    DlcIds = DlcCompat.RequiredDLCsForSync,
                 });
             }
         }

@@ -17,16 +17,24 @@ namespace CS2M.Mods
 
     public readonly struct ModSupportStatus : IJsonWritable
     {
-        public ModSupportStatus(string name, string typeName, ModSupportType type, bool clientSide)
+        public ModSupportStatus(string name, ModSupportType type, bool clientSide)
         {
             Name = name;
-            TypeName = typeName;
+            DlcId = DlcId.Invalid;
+            Type = type;
+            ClientSide = clientSide;
+        }
+
+        public ModSupportStatus(string name, DlcId dlcId, ModSupportType type, bool clientSide)
+        {
+            Name = name;
+            DlcId = dlcId;
             Type = type;
             ClientSide = clientSide;
         }
 
         public string Name { get; }
-        public string TypeName { get; }
+        public DlcId DlcId { get; }
         public ModSupportType Type { get; }
         public bool ClientSide { get; }
 
@@ -35,8 +43,6 @@ namespace CS2M.Mods
             writer.TypeBegin(this.GetType().FullName);
             writer.PropertyName("name");
             writer.Write(this.Name);
-            writer.PropertyName("type_name");
-            writer.Write(this.TypeName);
             writer.PropertyName("support");
             writer.Write(this.Type.ToString());
             writer.PropertyName("client_side");
@@ -48,23 +54,13 @@ namespace CS2M.Mods
     public static class ModCompat
     {
         private static readonly string[] ClientSideMods = { "I18NEverywhere.I18NEverywhere" };
-        private static readonly string[] ClientSideDlcs = { "DeluxeRelaxRadio" };
         private static readonly string[] IgnoredMods = { };
 
-        private static readonly string[] KnownToWork = {  };
-        private static readonly string[] UnsupportedMods = {  };
+        private static readonly string[] KnownToWork = { };
+        private static readonly string[] UnsupportedMods = { };
 
         public static IEnumerable<ModSupportStatus> GetModSupport()
         {
-            foreach (IDlc dlc in PlatformManager.instance.EnumerateDLCs())
-            {
-                if (PlatformManager.instance.IsDlcOwned(dlc))
-                {
-                    string name = dlc.backendName ?? dlc.internalName;
-                    yield return new ModSupportStatus("DLC: " + name, dlc.internalName, ModSupportType.Supported, ClientSideDlcs.Contains(dlc.internalName));
-                }
-            }
-
             foreach (ModManager.ModInfo info in GameManager.instance.modManager)
             {
                 // Skip disabled mods
@@ -88,7 +84,8 @@ namespace CS2M.Mods
                     // Mods known to work
                     if (KnownToWork.Contains(modInstanceName))
                     {
-                        yield return new ModSupportStatus(info.asset.name, modInstanceName, ModSupportType.KnownWorking, isClientSide);
+                        yield return new ModSupportStatus(info.asset.name, ModSupportType.KnownWorking,
+                            isClientSide);
                         continue;
                     }
 
@@ -96,25 +93,23 @@ namespace CS2M.Mods
                     if (ModSupport.Instance.ConnectedMods.Select(mod => mod.ModClass)
                         .Contains(modInstance?.GetType()))
                     {
-                        yield return new ModSupportStatus(info.asset.name, modInstanceName, ModSupportType.Supported, isClientSide);
+                        yield return new ModSupportStatus(info.asset.name, ModSupportType.Supported,
+                            isClientSide);
                         continue;
                     }
 
                     // Decide between unsupported and unknown
                     if (UnsupportedMods.Contains(modInstanceName))
                     {
-                        yield return new ModSupportStatus(info.asset.name, modInstanceName, ModSupportType.Unsupported, isClientSide);
+                        yield return new ModSupportStatus(info.asset.name, ModSupportType.Unsupported,
+                            isClientSide);
                         continue;
                     }
 
-                    yield return new ModSupportStatus(info.asset.name, modInstanceName, ModSupportType.Unknown, isClientSide);
+                    yield return new ModSupportStatus(info.asset.name, ModSupportType.Unknown,
+                        isClientSide);
                 }
             }
-        }
-
-        public static List<ModSupportStatus> GetModSupportList()
-        {
-            return GetModSupport().ToList();
         }
     }
 }

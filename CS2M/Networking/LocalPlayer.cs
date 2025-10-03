@@ -1,22 +1,34 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
+using Colossal;
+using Colossal.PSI.Common;
 using CS2M.API.Commands;
 using CS2M.API.Networking;
+using CS2M.Commands;
 using CS2M.Commands.ApiServer;
 using CS2M.Commands.Data.Internal;
+using CS2M.Helpers;
 using CS2M.Mods;
+using CS2M.UI;
 using CS2M.Util;
 using LiteNetLib;
+using Unity.Entities;
 
 namespace CS2M.Networking
 {
     public class LocalPlayer : Player
     {
+        private SlicedPacketStream _packetStream;
+        private readonly SaveLoadHelper _saveLoadHelper;
         private NetworkManager _networkManager;
+        private UISystem _uiSystem;
 
-        public LocalPlayer() : base()
+        public LocalPlayer()
         {
             PlayerStatusChangedEvent += PlayerStatusChanged;
             PlayerTypeChangedEvent += PlayerTypeChanged;
+            _saveLoadHelper = World.DefaultGameObjectInjectionWorld.GetOrCreateSystemManaged<SaveLoadHelper>();
         }
 
         public bool GetServerInfo(ConnectionConfig connectionConfig)
@@ -25,23 +37,24 @@ namespace CS2M.Networking
             {
                 return false;
             }
-            // Check if is in main menu
 
             _networkManager = new NetworkManager();
 
             _networkManager.NatHolePunchSuccessfulEvent += NatConnect;
             _networkManager.NatHolePunchFailedEvent += DirectConnect;
             _networkManager.ClientConnectSuccessfulEvent += ConnectionEstablished;
-            _networkManager.ClientConnectFailedEvent += Inactive;
+            _networkManager.ClientConnectFailedEvent += ConnectionFailed;
             _networkManager.ClientDisconnectEvent += Inactive;
 
             if (!_networkManager.InitConnect(connectionConfig))
             {
+                _uiSystem.SetJoinErrors("CS2M.UI.JoinError.ClientFailed");
                 return false;
             }
 
             if (!_networkManager.SetupNatConnect())
             {
+                _uiSystem.SetJoinErrors("CS2M.UI.JoinError.InvalidIP");
                 return false;
             }
 
@@ -59,6 +72,7 @@ namespace CS2M.Networking
 
             if (!_networkManager.Connect())
             {
+                _uiSystem.SetJoinErrors("CS2M.UI.JoinError.FailedToConnect");
                 Inactive();
                 return false;
             }
@@ -77,11 +91,19 @@ namespace CS2M.Networking
 
             if (!_networkManager.Connect())
             {
+                _uiSystem.SetJoinErrors("CS2M.UI.JoinError.FailedToConnect");
                 Inactive();
                 return false;
             }
 
             PlayerStatus = PlayerStatus.DIRECT_CONNECT;
+            return true;
+        }
+
+        public bool ConnectionFailed()
+        {
+            _uiSystem.SetJoinErrors("CS2M.UI.JoinError.FailedToConnect");
+            Inactive();
             return true;
         }
 
@@ -100,11 +122,71 @@ namespace CS2M.Networking
                 ModVersion = VersionUtil.GetModVersion(),
                 GameVersion = VersionUtil.GetGameVersion(),
                 Mods = ModSupport.Instance.RequiredModsForSync,
-                DlcIds = new List<int>(), //TODO: Update with correct DLC List
+                DlcIds = DlcCompat.RequiredDLCsForSync,
             });
 
             PlayerStatus = PlayerStatus.CONNECTION_ESTABLISHED;
             return true;
+        }
+
+        public void PreconditionsError(PreconditionsErrorCommand command)
+        {
+            Inactive();
+            var errors = new List<string>();
+            PreconditionsUtil.Errors err = command.Errors;
+            if (err.HasFlag(PreconditionsUtil.Errors.GAME_VERSION_MISMATCH))
+            {
+                errors.Add("precondition:GAME_VERSION_MISMATCH");
+                errors.Add(command.GameVersion.ToString());
+                errors.Add(VersionUtil.GetGameVersion().ToString());
+            }
+
+            if (err.HasFlag(PreconditionsUtil.Errors.MOD_VERSION_MISMATCH))
+            {
+                errors.Add("precondition:MOD_VERSION_MISMATCH");
+                errors.Add(command.ModVersion.ToString());
+                errors.Add(VersionUtil.GetModVersion().ToString());
+            }
+
+            if (err.HasFlag(PreconditionsUtil.Errors.USERNAME_NOT_AVAILABLE))
+            {
+                errors.Add("precondition:USERNAME_NOT_AVAILABLE");
+            }
+
+            if (err.HasFlag(PreconditionsUtil.Errors.PASSWORD_INCORRECT))
+            {
+                errors.Add("precondition:PASSWORD_INCORRECT");
+            }
+
+            if (err.HasFlag(PreconditionsUtil.Errors.DLCS_MISMATCH))
+            {
+                List<int> clientDLCs = DlcCompat.RequiredDLCsForSync;
+                List<int> serverDLCs = command.DlcIds;
+
+                IEnumerable<string> clientNotServer = clientDLCs.Where(mod => !serverDLCs.Contains(mod))
+                    .Select(id => DlcCompat.GetDisplayName(new DlcId(id)));
+                IEnumerable<string> serverNotClient = serverDLCs.Where(mod => !clientDLCs.Contains(mod))
+                    .Select(id => DlcCompat.GetDisplayName(new DlcId(id)));
+
+                errors.Add("precondition:DLCS_MISMATCH");
+                errors.Add(string.Join(", ", serverNotClient));
+                errors.Add(string.Join(", ", clientNotServer));
+            }
+
+            if (err.HasFlag(PreconditionsUtil.Errors.MODS_MISMATCH))
+            {
+                List<string> clientMods = ModSupport.Instance.RequiredModsForSync;
+                List<string> serverMods = command.Mods;
+
+                IEnumerable<string> clientNotServer = clientMods.Where(mod => !serverMods.Contains(mod));
+                IEnumerable<string> serverNotClient = serverMods.Where(mod => !clientMods.Contains(mod));
+
+                errors.Add("precondition:MODS_MISMATCH");
+                errors.Add(string.Join(", ", serverNotClient));
+                errors.Add(string.Join(", ", clientNotServer));
+            }
+
+            _uiSystem.SetJoinErrors(errors.ToArray());
         }
 
         public bool WaitingToJoin()
@@ -122,16 +204,75 @@ namespace CS2M.Networking
 
         public bool DownloadingMap()
         {
-            // TODO: Change, when implemented Map transfer
-            return Playing();
+            if (PlayerStatus != PlayerStatus.WAITING_TO_JOIN)
+            {
+                return false;
+            }
+
+            // Change state to downloading map, next step is to wait until all
+            // map packets have been received by `SliceReceived` below.
+            PlayerStatus = PlayerStatus.DOWNLOADING_MAP;
+            _uiSystem.SetLoadProgress(0, 0);
+            return true;
+        }
+
+        public void SliceReceived(WorldTransferCommand cmd)
+        {
+            if (PlayerStatus != PlayerStatus.DOWNLOADING_MAP)
+            {
+                Log.Warn("Received world slice, but not in downloading state");
+                return;
+            }
+
+            if (cmd.NewTransfer)
+            {
+                _packetStream = new SlicedPacketStream(cmd.WorldSlice.Length);
+            }
+            else if (_packetStream == null)
+            {
+                Log.Warn("Received world slice without initialized packet stream");
+                _uiSystem.SetJoinErrors("CS2M.JoinError.DownloadFailed");
+                Inactive();
+                return;
+            }
+
+            _packetStream.AppendSlice(cmd.WorldSlice);
+            _uiSystem.SetLoadProgress((int)_packetStream.Length, cmd.RemainingBytes);
+
+            if (cmd.RemainingBytes == 0)
+            {
+                LoadingMap();
+            }
         }
 
         public void LoadingMap()
         {
+            if (PlayerStatus != PlayerStatus.DOWNLOADING_MAP)
+            {
+                return;
+            }
+
+            PlayerStatus = PlayerStatus.LOADING_MAP;
+            TaskManager.instance.EnqueueTask("LoadMap", async () =>
+            {
+                bool success = await _saveLoadHelper.LoadGame(_packetStream);
+                if (success)
+                {
+                    _packetStream = null; // Clean up save game memory
+                    Playing();
+                }
+                // TODO: Error handling
+            });
         }
 
         public bool Playing()
         {
+            if (PlayerStatus != PlayerStatus.LOADING_MAP)
+            {
+                return false;
+            }
+
+            PlayerStatus = PlayerStatus.PLAYING;
             return true;
         }
 
@@ -179,7 +320,8 @@ namespace CS2M.Networking
             {
                 //TODO: Clean-Up client
             }
-            _networkManager.Stop();
+
+            _networkManager?.Stop();
 
             PlayerStatus = PlayerStatus.INACTIVE;
             PlayerType = PlayerType.NONE;
@@ -188,6 +330,11 @@ namespace CS2M.Networking
 
         public void OnUpdate()
         {
+            if (_uiSystem == null)
+            {
+                _uiSystem = World.DefaultGameObjectInjectionWorld.GetOrCreateSystemManaged<UISystem>();
+            }
+
             if (PlayerStatus != PlayerStatus.INACTIVE)
             {
                 _networkManager.ProcessEvents();
@@ -259,12 +406,12 @@ namespace CS2M.Networking
 
         public void PlayerStatusChanged(PlayerStatus oldPlayerStatus, PlayerStatus newPlayerStatus)
         {
-            Log.Trace($"LocalPlayer: changed player status from {oldPlayerStatus} to {newPlayerStatus}");
+            Log.Debug($"LocalPlayer: changed player status from {oldPlayerStatus} to {newPlayerStatus}");
         }
 
         public void PlayerTypeChanged(PlayerType oldPlayerType, PlayerType newPlayerType)
         {
-            Log.Trace($"LocalPlayer: changed player type from {oldPlayerType} to {newPlayerType}");
+            Log.Debug($"LocalPlayer: changed player type from {oldPlayerType} to {newPlayerType}");
         }
     }
 }

@@ -7,6 +7,8 @@
 
         <!--The file where mod information which is required for publishing mod on PDX mods are stored-->
         <PublishConfigurationPath>Properties\PublishConfiguration.xml</PublishConfigurationPath>
+        <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+        <LangVersion>9</LangVersion>
     </PropertyGroup>
 
     <!--Imports must be after PropertyGroup block-->
@@ -50,6 +52,9 @@
         <Reference Include="Colossal.PSI.Common">
             <Private>false</Private>
         </Reference>
+        <Reference Include="Colossal.AssetPipeline">
+            <Private>false</Private>
+        </Reference>
     </ItemGroup>
 
     <ItemGroup>
@@ -83,6 +88,7 @@
         <PackageReference Include="MessagePack" Version="3.1.3"/>
         <PackageReference Include="MessagePack.Attributeless" Version="1.0.1"/>
         <PackageReference Include="MessagePack.UnityShims" Version="3.1.3"/>
+        <PackageReference Include="Lib.Harmony" Version="2.2.2"/>
     </ItemGroup>
 
     <ItemGroup>
@@ -108,6 +114,7 @@
         <PackAssemblies Include="$(OutputPath)\System.Reflection.Emit.dll"/>
         <PackAssemblies Include="$(OutputPath)\System.Reflection.Emit.Lightweight.dll"/>
         <PackAssemblies Include="$(OutputPath)\System.Reflection.Emit.ILGeneration.dll"/>
+        <PackAssemblies Include="$(OutputPath)\0Harmony.dll"/>
     </ItemGroup>
 
     <Target Name="CopyEmits" AfterTargets="Build">
