@@ -12,17 +12,34 @@ namespace CS2M.Mods
         public static List<int> RequiredDLCsForSync =>
             GetDlcSupport().Where(dlc => !dlc.ClientSide).Select(dlc => dlc.DlcId.id).ToList();
 
+        private static string GetName(IDlc dlc)
+        {
+            return (dlc.backendName ?? dlc.internalName).Replace("Cities: Skylines II - ", "");
+        }
+
         public static IEnumerable<ModSupportStatus> GetDlcSupport()
         {
             foreach (IDlc dlc in PlatformManager.instance.EnumerateDLCs())
             {
                 if (PlatformManager.instance.IsDlcOwned(dlc))
                 {
-                    string name = dlc.backendName ?? dlc.internalName;
-                    yield return new ModSupportStatus("DLC: " + name, dlc.id, ModSupportType.Supported,
+                    yield return new ModSupportStatus("DLC: " + GetName(dlc), dlc.id, ModSupportType.Supported,
                         ClientSideDlcs.Contains(dlc.internalName));
                 }
             }
+        }
+
+        public static string GetDisplayName(DlcId id)
+        {
+            foreach (IDlc dlc in PlatformManager.instance.EnumerateDLCs())
+            {
+                if (dlc.id == id)
+                {
+                    return GetName(dlc);
+                }
+            }
+
+            return PlatformManager.instance.GetDlcName(id);
         }
     }
 }

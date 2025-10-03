@@ -164,9 +164,9 @@ namespace CS2M.Networking
                 List<int> serverDLCs = command.DlcIds;
 
                 IEnumerable<string> clientNotServer = clientDLCs.Where(mod => !serverDLCs.Contains(mod))
-                    .Select(id => PlatformManager.instance.GetDlcName(new DlcId(id)));
+                    .Select(id => DlcCompat.GetDisplayName(new DlcId(id)));
                 IEnumerable<string> serverNotClient = serverDLCs.Where(mod => !clientDLCs.Contains(mod))
-                    .Select(id => PlatformManager.instance.GetDlcName(new DlcId(id)));
+                    .Select(id => DlcCompat.GetDisplayName(new DlcId(id)));
 
                 errors.Add("precondition:DLCS_MISMATCH");
                 errors.Add(string.Join(", ", serverNotClient));

@@ -33,21 +33,22 @@ namespace CS2M.Util
             }
 
             // Check both clients have the same DLCs enabled
-            if (!DlcCompat.RequiredDLCsForSync.All(remote.DlcIds.Contains))
+            List<int> localDlcs = DlcCompat.RequiredDLCsForSync;
+            if (!localDlcs.All(remote.DlcIds.Contains) || localDlcs.Count != remote.DlcIds.Count)
             {
                 Log.Debug("[Preconditions Check] DLCs don't match.");
                 Log.Debug($"[Preconditions Check] Remote DLCs: {string.Join(", ", remote.DlcIds)}");
-                Log.Debug($"[Preconditions Check] Local DLCs: {string.Join(", ", DlcCompat.RequiredDLCsForSync)}");
+                Log.Debug($"[Preconditions Check] Local DLCs: {string.Join(", ", localDlcs)}");
                 result.Errors |= Errors.DLCS_MISMATCH;
             }
 
             // Check both clients have the same Mods enabled
-            if (!ModSupport.Instance.RequiredModsForSync.All(remote.Mods.Contains))
+            List<string> localMods = ModSupport.Instance.RequiredModsForSync;
+            if (!localMods.All(remote.Mods.Contains) || localMods.Count != remote.Mods.Count)
             {
                 Log.Debug("[Preconditions Check] Mods don't match.");
                 Log.Debug($"[Preconditions Check] Remote mods: {string.Join(", ", remote.Mods)}");
-                Log.Debug(
-                    $"[Preconditions Check] Local mods: {string.Join(", ", ModSupport.Instance.RequiredModsForSync)}");
+                Log.Debug($"[Preconditions Check] Local mods: {string.Join(", ", localMods)}");
                 result.Errors |= Errors.MODS_MISMATCH;
             }
 
