@@ -74,6 +74,7 @@ namespace CS2M.Util
             PASSWORD_INCORRECT = 8,
             DLCS_MISMATCH = 16,
             MODS_MISMATCH = 32,
+            SERVER_FULL = 64,
         }
     }
 }

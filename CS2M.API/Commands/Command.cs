@@ -9,6 +9,11 @@ namespace CS2M.API.Commands
 
         public static MultiplayerRole CurrentRole { get; set; }
 
+        /// <summary>
+        ///     The local player's username, for commands that show it to others (cursors).
+        /// </summary>
+        public static Func<string> GetLocalUsername;
+
         public static void ConnectToCSM(Action<CommandBase> sendToAll, Action<CommandBase> sendToServer, Action<CommandBase> sendToClients, Func<Type, CommandHandler> getCommandHandler)
         {
             SendToAll = sendToAll;

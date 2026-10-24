@@ -11,7 +11,8 @@ namespace CS2M.API.Commands
     public abstract class CommandBase
     {
         /// <summary>
-        ///     The id of the sending player. -1 for the server.
+        ///     The id of the sending player: 0 for the host, 1, 2, 3... for joiners in join order (never reused
+        ///     while the host runs). The host stamps it from the connection, so it can't be forged.
         /// </summary>
         public int SenderId { get; set; }
     }

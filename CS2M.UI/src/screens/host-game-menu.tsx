@@ -9,6 +9,8 @@ import {setVal} from "../api";
 export const hostMenuVisible = bindValue<boolean>(mod.id, 'HostMenuVisible');
 export const modSupport = bindValue<Array<any>>(mod.id, 'modSupport');
 export const port = bindValue<number>(mod.id, 'HostPort');
+export const maxPlayers = bindValue<number>(mod.id, 'HostMaxPlayers', 0);
+export const hostPassword = bindValue<string>(mod.id, 'HostPassword', '');
 export const username = bindValue<string>(mod.id, 'Username');
 export const playerStatus = bindValue<string>(mod.id, 'PlayerStatus');
 
@@ -33,7 +35,10 @@ export const HostGameSettings = () => {
 
     let portValue = useValue(port);
     let usernameValue = useValue(username);
+    const hostPasswordValue = useValue(hostPassword);
+    const maxPlayersValue = useValue(maxPlayers);
     const status = useValue(playerStatus);
+    const {translate} = useLocalization();
 
     const enabled = status == "INACTIVE";
 
@@ -53,10 +58,22 @@ export const HostGameSettings = () => {
                                     onChange={(val: any) => {
                                         setVal("SetUsername", val)
                                     }}></InputField>
+                        {/* Empty for an open session; kept for this game run only */}
+                        <InputField label={"CS2M.UI.Password"} value={hostPasswordValue} disabled={!enabled} maxLength={64}
+                                    onChange={(val: any) => {
+                                        setVal("SetHostPassword", val)
+                                    }}></InputField>
+                        {/* The host counts as a player; 0 or empty is no limit */}
+                        <InputField label={"CS2M.UI.MaxPlayers"} value={maxPlayersValue > 0 ? String(maxPlayersValue) : ""}
+                                    disabled={!enabled} maxLength={2}
+                                    onChange={(val: any) => {
+                                        const parsed = parseInt(val);
+                                        setIntVal("SetHostMaxPlayers", isNaN(parsed) ? 0 : parsed)
+                                    }}></InputField>
                     </NavigationScope>
                 </div>
                 <div className={GameOptionsCSS.infoColumn}>
-
+                    {translate("CS2M.UI.MaxPlayersHint")}
                 </div>
             </div>
         </FocusBoundary>

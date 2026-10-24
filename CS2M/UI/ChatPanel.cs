@@ -50,6 +50,9 @@ namespace CS2M.UI
 
         public override LayoutPosition position => LayoutPosition.Right;
 
+        // older messages are dropped, so a long session (or a chatty player) doesn't grow the panel forever
+        private const int MaxMessages = 200;
+
         public ChatPanel()
         {
             Chat.Instance = this;
@@ -65,6 +68,7 @@ namespace CS2M.UI
 
         private void UpdateChatMessage(string message)
         {
+            message ??= "";
             if (message.EndsWith("\n"))
             {
                 // User has pressed 'Enter' so we send the message they have input.
@@ -72,7 +76,10 @@ namespace CS2M.UI
             }
             else
             {
-                LocalChatMessage.Update(message);
+                // a little over the limit, so the cut happens visibly when sending
+                LocalChatMessage.Update(message.Length > TextRules.MaxChatLength * 2
+                    ? message.Substring(0, TextRules.MaxChatLength * 2)
+                    : message);
             }
         }
 
@@ -84,12 +91,21 @@ namespace CS2M.UI
                 username = "Local";
             }
 
-            PrintChatMessage(username, LocalChatMessage.value);
+            // the same limits the host applies, so what we see is what the others see
+            string text = TextRules.CleanChat(LocalChatMessage.value);
+            if (text.Length == 0)
+            {
+                LocalChatMessage.Update(string.Empty);
+                return;
+            }
 
+            PrintChatMessage(username, text);
+
+            // the host replaces the name with the one we joined with
             ChatMessageCommand message = new ChatMessageCommand()
             {
                 Username = GetCurrentUsername(),
-                Message = LocalChatMessage.value
+                Message = text
             };
             CommandInternal.Instance.SendToAll(message);
 
@@ -100,6 +116,11 @@ namespace CS2M.UI
         {
             Log.Info($"Chat message: [{sender}] - {msg}");
             ChatMessages.value.Add(new Message(DateTime.Now.ToShortTimeString(), sender, msg));
+            if (ChatMessages.value.Count > MaxMessages)
+            {
+                ChatMessages.value.RemoveRange(0, ChatMessages.value.Count - MaxMessages);
+            }
+
             ChatMessages.TriggerUpdate();
         }
 

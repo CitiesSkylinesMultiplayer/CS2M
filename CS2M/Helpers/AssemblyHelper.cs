@@ -10,7 +10,7 @@ namespace CS2M.Helpers
     {
         private static IEnumerable<Assembly> GetEnabledAssemblies()
         {
-            return GameManager.instance.modManager.Where(info => info.asset.isEnabled)
+            return GameManager.instance.modManager.Where(info => info.isLoaded)
                 .Select(info => info.asset.assembly).ToList();
         }
 

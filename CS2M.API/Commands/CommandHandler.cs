@@ -5,7 +5,9 @@ namespace CS2M.API.Commands
     public abstract class CommandHandler
     {
         /// <summary>
-        ///     If this is true, client -> server packets are relayed to all other clients.
+        ///     If this is true, client -> server packets are relayed to all other clients. The host only accepts
+        ///     (and so only relays) the command types joiners may send, listed in CS2M.Networking.CommandPolicy;
+        ///     every other type is host to joiner only.
         /// </summary>
         public bool RelayOnServer { get; protected set; } = true;
 

@@ -1,0 +1,202 @@
+$bg: rgba(16, 19, 24, 0.86);
+$line: rgba(255, 255, 255, 0.08);
+$muted: rgba(255, 255, 255, 0.6);
+
+// top right, under the game's options cog
+.hud {
+    position: absolute;
+    right: 12rem;
+    top: 70rem;
+    width: 280rem;
+    display: flex;
+    flex-direction: column;
+    background-color: $bg;
+    border-radius: 8rem;
+    border: 1rem solid $line;
+    pointer-events: auto;
+    color: white;
+}
+
+.header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 8rem 10rem;
+    border-bottom: 1rem solid $line;
+}
+
+.title {
+    font-size: 14rem;
+    font-weight: bold;
+}
+
+.hide {
+    width: 22rem;
+    height: 22rem;
+    border-radius: 4rem;
+    background-color: rgba(255, 255, 255, 0.08);
+    color: white;
+    font-size: 16rem;
+}
+
+.players {
+    display: flex;
+    flex-direction: column;
+    padding: 6rem 10rem;
+    border-bottom: 1rem solid $line;
+}
+
+.player {
+    display: flex;
+    align-items: center;
+    padding: 3rem 0;
+}
+
+.swatch {
+    width: 10rem;
+    height: 10rem;
+    border-radius: 50%;
+    margin-right: 8rem;
+}
+
+.name {
+    font-size: 13rem;
+    flex: 1;
+}
+
+.activity {
+    font-size: 11rem;
+    color: $muted;
+}
+
+.messages {
+    display: flex;
+    flex-direction: column;
+    padding: 6rem 10rem;
+    min-height: 20rem;
+}
+
+.message {
+    font-size: 12rem;
+    padding: 2rem 0;
+}
+
+.notice {
+    font-size: 11rem;
+    font-style: italic;
+    color: $muted;
+    padding: 2rem 0;
+}
+
+.user {
+    font-weight: bold;
+    margin-right: 6rem;
+}
+
+.text {
+    color: rgba(255, 255, 255, 0.9);
+}
+
+.input {
+    display: flex;
+    align-items: center;
+    padding: 6rem 8rem 8rem 8rem;
+}
+
+.field {
+    flex: 1;
+    margin-right: 6rem;
+}
+
+.send {
+    padding: 4rem 10rem;
+    border-radius: 4rem;
+    background-color: rgba(214, 255, 63, 0.85);
+    color: #101318;
+    font-size: 12rem;
+    font-weight: bold;
+}
+
+// hidden state: a small pill with the player count and unread messages
+.collapsed {
+    position: absolute;
+    right: 12rem;
+    top: 70rem;
+    display: flex;
+    align-items: center;
+    padding: 6rem 10rem;
+    border-radius: 14rem;
+    background-color: $bg;
+    border: 1rem solid $line;
+    color: white;
+    font-size: 13rem;
+    pointer-events: auto;
+}
+
+.dot {
+    width: 8rem;
+    height: 8rem;
+    border-radius: 50%;
+    background-color: #d6ff3f;
+    margin-right: 6rem;
+}
+
+.badge {
+    margin-left: 8rem;
+    padding: 0 6rem;
+    border-radius: 8rem;
+    background-color: #e2312a;
+    font-size: 11rem;
+    font-weight: bold;
+}
+
+// moderation (host): the ⋯ button on a player row and its kick/ban actions
+.more {
+    margin-left: 6rem;
+    padding: 0 6rem;
+    border-radius: 4rem;
+    background-color: rgba(255, 255, 255, 0.06);
+    color: white;
+    font-size: 13rem;
+}
+
+.actions {
+    display: flex;
+    align-items: center;
+    margin-left: 6rem;
+}
+
+.action, .danger {
+    margin-left: 4rem;
+    padding: 2rem 8rem;
+    border-radius: 4rem;
+    font-size: 11rem;
+    font-weight: bold;
+    color: white;
+    background-color: rgba(255, 255, 255, 0.1);
+}
+
+.danger {
+    background-color: rgba(226, 49, 42, 0.85);
+}
+
+.confirm {
+    font-size: 11rem;
+    color: rgba(255, 255, 255, 0.8);
+}
+
+// shown to a kicked/banned player
+.noticeBox {
+    position: absolute;
+    right: 12rem;
+    top: 70rem;
+    display: flex;
+    align-items: center;
+    padding: 8rem 12rem;
+    border-radius: 8rem;
+    background-color: rgba(16, 19, 24, 0.9);
+    border: 1rem solid rgba(226, 49, 42, 0.6);
+    color: white;
+    font-size: 13rem;
+    pointer-events: auto;
+}

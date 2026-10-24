@@ -59,6 +59,14 @@ namespace CS2M.Mods
         private static readonly string[] KnownToWork = { };
         private static readonly string[] UnsupportedMods = { };
 
+        /// <summary>
+        ///     Whether CS2M lets players differ on this mod (only changes what one player sees).
+        /// </summary>
+        public static bool IsClientSide(System.Type modType)
+        {
+            return modType != null && ClientSideMods.Contains(modType.ToString());
+        }
+
         public static IEnumerable<ModSupportStatus> GetModSupport()
         {
             foreach (ModManager.ModInfo info in GameManager.instance.modManager)

@@ -26,7 +26,7 @@ namespace CS2M.Commands.ApiServer.Handler
                     }
                     else {
                         message =
-                            "Port could not be forwarded automatically and server is not reachable from the internet. Manual port forwarding is required. See the \"Manage Server\" menu for more info.";
+                            "Server is not reachable from the internet directly. Players can still join from the server browser in most cases; joining by IP address needs the port forwarded in your router.";
                     }
                     break;
                 case PortCheckResult.Reachable:

@@ -10,13 +10,13 @@
     <Import Project="$([System.Environment]::GetEnvironmentVariable('CSII_TOOLPATH', 'EnvironmentVariableTarget.Process'))\Mod.props"/>
 
     <ItemGroup>
-        <PackageReference Include="MessagePack" Version="3.1.3">
+        <PackageReference Include="MessagePack" Version="3.1.12">
             <Aliases>MsgPack</Aliases>
         </PackageReference>
         <PackageReference Include="MessagePack.Attributeless" Version="1.0.1">
             <Aliases>MsgPack</Aliases>
         </PackageReference>
-        <PackageReference Include="MessagePack.UnityShims" Version="3.1.3"/>
+        <PackageReference Include="MessagePack.UnityShims" Version="3.1.12"/>
         <PackageReference Include="Microsoft.NET.Test.Sdk" Version="17.13.0"/>
         <PackageReference Include="NUnit" Version="4.3.2"/>
         <PackageReference Include="NUnit3TestAdapter" Version="5.0.0"/>

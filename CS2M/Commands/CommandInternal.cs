@@ -27,6 +27,15 @@ namespace CS2M.Commands
 
         private MessagePackSerializerOptions _model;
 
+        // For everything a peer sends us: collision-resistant hashing and a bounded object graph depth
+        private MessagePackSerializerOptions _untrustedModel;
+
+        /// <summary>
+        ///     Object graph depth allowed in a received command. The deepest command (NetDiff with its edge
+        ///     data) is well below this.
+        /// </summary>
+        private const int MaxObjectGraphDepth = 32;
+
         public CommandInternal()
         {
             Command.ConnectToCSM(SendToAll, SendToServer, SendToClients, GetCommandHandler);
@@ -125,9 +134,20 @@ namespace CS2M.Commands
             return MessagePackSerializer.Serialize(command, _model);
         }
 
+        /// <summary>
+        ///     Reads a command received from the network. Throws on malformed data.
+        /// </summary>
         public CommandBase Deserialize(byte[] bytes)
         {
-            return MessagePackSerializer.Deserialize<CommandBase>(bytes, _model);
+            return MessagePackSerializer.Deserialize<CommandBase>(bytes, _untrustedModel);
+        }
+
+        /// <summary>
+        ///     Reads a command received from the network. Throws on malformed data.
+        /// </summary>
+        public CommandBase Deserialize(ReadOnlyMemory<byte> bytes)
+        {
+            return MessagePackSerializer.Deserialize<CommandBase>(bytes, _untrustedModel);
         }
 
         public void RefreshModel()
@@ -178,6 +198,8 @@ namespace CS2M.Commands
                 }
 
                 _model = options.Build();
+                _untrustedModel = _model.WithSecurity(
+                    MessagePackSecurity.UntrustedData.WithMaximumObjectGraphDepth(MaxObjectGraphDepth));
             }
             catch (Exception ex)
             {
